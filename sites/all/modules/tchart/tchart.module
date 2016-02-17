@@ -1,0 +1,399 @@
+<?php
+
+module_load_include('inc', 'tchart', 'includes/tchart_commons');
+module_load_include('inc', 'tchart', 'includes/tchart_query');
+module_load_include('module', 'echarts');
+
+/**
+ * Implements hook_menu().
+ */
+function tchart_menu()
+{
+    $items = array();
+    $items['taxonomy/term/%taxonomy_term'] = array(
+
+        'title' => 'Current posts',
+        'description' => '设置',
+        'page callback' => 'taxonomy_show',      //将会回调这个方法
+        'page arguments' => array(2),
+        'access arguments' => array('access content'),
+//        'type'=>MENU_NORMAL_ITEM,
+    );
+    $items['admin/structure/tchart'] = array(
+        'title' => 'Taxonomy display',
+        'description' => '设置想要展示的Taxonomies',
+        'page callback' => 'drupal_get_form',      //将会回调这个方法
+        'page arguments' => array('tchart_vocabulary_form'),
+        'access arguments' => array('access administration pages'),
+    );
+    $items['admin/structure/tchart/ses'] = array(
+        'title' => 'Taxonomy display',
+        'description' => '设置想要展示的Taxonomy',
+        'page callback' => 'drupal_get_form',      //将会回调这个方法
+        'page arguments' => array('tchart_term_form'),
+        'access arguments' => array('access administration pages'),
+        'type' => MENU_LOCAL_TASK,
+    );
+    $items['admin/structure/tchart/select'] = array(
+        'title' => 'Taxonomy select22222',
+        'description' => '设置ddd22222222',
+        'page callback' => 'drupal_get_form',      //将会回调这个方法
+        'page arguments' => array('tchart_forms'),
+        'access arguments' => array('access administration pages'),
+        'type' => MENU_LOCAL_TASK,
+    );
+    return $items;
+
+}
+
+/**
+ * Implements hook_form().
+ */
+//function tchart_forms($node, &$form_state)
+//{
+//    $form['current_post_max/aaa'] =array(
+//        '#type'=>'textfield',
+//        '#title'=>t('Maximum number of posts'),
+//        '#default_value'=>variable_get('current_post_max',3),
+//        '#size'=>2,
+//        '#maxlength'=>2,
+//        '#description'=>t('the maximum of numbers display in the block'),
+//        '#required'=>TRUE,
+//    );
+//    $form['current_post_max2'] =array(
+//        '#type'=>'textfield',
+//        '#title'=>t('Maximum number of posts'),
+//        '#default_value'=>variable_get('current_post_max',3),
+//        '#size'=>2,
+//        '#maxlength'=>2,
+//        '#description'=>t('the maximum of numbers display in the block'),
+//        '#required'=>TRUE,
+//    );
+//    return system_settings_form($form);
+//}
+
+/**
+ * 选择需要展示的vocabularies
+ */
+function tchart_vocabulary_form()
+{
+    $vocabularies = taxonomy_vocabulary_load_multiple(FALSE);
+
+    foreach ($vocabularies as $vocabulary) {
+
+        if ($vocabulary->vid != 1) {
+            $form['tchart_vocabulary_' . $vocabulary->vid] = array(
+                '#type' => 'checkbox',
+                '#title' => t($vocabulary->name),
+                '#default_value' => variable_get('tchart_vocabulary_' . $vocabulary->vid, FALSE),
+                '#required' => FALSE,
+            );
+        }
+    }
+
+    return system_settings_form($form);
+}
+
+/**
+ * 选中term以展示echarts
+ */
+function tchart_term_form()
+{
+    $vocabularies = taxonomy_vocabulary_load_multiple(FALSE);
+
+    foreach ($vocabularies as $vocabulary) {
+        if (variable_get('tchart_vocabulary_' . $vocabulary->vid, FALSE)) {
+            $form['tchart_vocabulary_mark_' . $vocabulary->vid] = array(
+                '#markup' => t($vocabulary->name),
+            );
+            $terms = taxonomy_term_load_multiple(FALSE, array('vid' => $vocabulary->vid));
+            foreach ($terms as $term) {
+                $form['tchart_term_' . $term->tid] = array(
+                    '#type' => 'checkbox',
+                    '#title' => ($vocabulary->name) . get_all_term_parents($term) . '{tid=' . $term->tid . '}',
+                    '#default_value' => variable_get('tchart_term_' . $term->tid, FALSE),
+                    '#required' => FALSE,
+                );
+                $form['tchart_term_sql_' . $term->tid] = array(
+                    '#type' => 'textfield',
+                    '#title' => t('SQL语句'),
+                    '#default_value' => variable_get('tchart_term_sql_' . $term->tid, 'SELECT * FROM AAA WHERE "tid"=' . $term->tid),
+                    '#required' => FALSE,
+                );
+            }
+
+        }
+    }
+
+    if (empty($form)) {
+        $form['tchart_no_vocabulary'] = array(
+            '#markup' => t('没有分类被选中'),
+        );
+    }
+    return system_settings_form($form);
+}
+
+/**
+ * 展示echarts或者taxonomy
+ */
+function taxonomy_show($term)
+{
+    // If there is a menu link to this term, the link becomes the last part of
+    // the active trail, and the link name becomes the page title. Thus, we must
+    // explicitly set the page title to be the term title.
+    drupal_set_title($term->name);
+
+    // Build breadcrumb based on the hierarchy of the term.
+    $current = (object)array(
+        'tid' => $term->tid,
+    );
+    // @todo This overrides any other possible breadcrumb and is a pure hard-coded
+    //   presumption. Make this behavior configurable per vocabulary or term.
+    $breadcrumb = array();
+    while ($parents = taxonomy_get_parents($current->tid)) {
+        $current = array_shift($parents);
+        $breadcrumb[] = l($current->name, 'taxonomy/term/' . $current->tid);
+    }
+    $breadcrumb[] = l(t('Home'), NULL);
+    $breadcrumb = array_reverse($breadcrumb);
+    drupal_set_breadcrumb($breadcrumb);
+    drupal_add_feed('taxonomy/term/' . $term->tid . '/feed', 'RSS - ' . $term->name);
+
+    // Set the term path as the canonical URL to prevent duplicate content.
+    $uri = entity_uri('taxonomy_term', $term);
+    drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);
+    // Set the non-aliased path as a default shortlink.
+    drupal_add_html_head_link(array('rel' => 'shortlink', 'href' => url($uri['path'], array_merge($uri['options'], array('alias' => TRUE)))), TRUE);
+
+    // Normally we would call taxonomy_term_show() here, but for backwards
+    // compatibility in Drupal 7 we do not want to do that (it produces different
+    // data structures and HTML markup than what Drupal 7 released with). Calling
+    // taxonomy_term_view() directly provides essentially the same thing, but
+    // allows us to wrap the rendered term in our desired array structure.
+    $build['term_heading'] = array(
+        '#prefix' => '<div class="term-listing-heading">',
+        '#suffix' => '</div>',
+        'term' => taxonomy_term_view($term, 'full'),
+    );
+
+
+    //如果被选中,则显示echarts
+    if (variable_get('tchart_term_' . (string)$term->tid, FALSE) && variable_get('tchart_vocabulary_' . (string)$term->vid, FALSE)) {
+
+        $settings['echart'] = queryss($term);
+
+        $build['content'] = array(
+            '#prefix' => '<p>',
+            '#markup' => render_echarts($settings),
+            '#suffix' => '</p>',
+        );
+    } else {
+        //否则正常显示
+        if ($nids = taxonomy_select_nodes($term->tid, TRUE, variable_get('default_nodes_main', 10))) {
+            $nodes = node_load_multiple($nids);
+            $build += node_view_multiple($nodes);
+            $build['pager'] = array(
+                '#theme' => 'pager',
+                '#weight' => 5,
+            );
+        } else {
+            $build['no_content'] = array(
+                '#prefix' => '<p>',
+                '#markup' => t('There is currently no content classified with this term.'),
+                '#suffix' => '</p>',
+            );
+        }
+    }
+
+    return $build;
+
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function tchart_block_info()
+{
+    $blocks['side_navigation'] = array(
+        'info' => t('Side navigation'),//The name that will appear in the block list.
+        'cache' => DRUPAL_CACHE_PER_ROLE     //default
+    );
+
+    $blocks['top_navigation'] = array(
+        'info' => t('Top navigation'),//The name that will appear in the block list.
+        'cache' => DRUPAL_CACHE_PER_ROLE     //default
+    );
+
+    return $blocks;
+}
+
+
+/**
+ * Implements hook_block_view().
+ */
+function tchart_block_view($delta = '')
+{
+
+    switch ($delta) {
+        case 'side_navigation':
+            if (user_access('access content')) {
+
+                if(arg(0)=='taxonomy'&&arg(1)=='term'){
+                    $tid=arg(2);
+                }else{
+                    break;
+                }
+
+
+                $data = array_reverse(taxonomy_get_parents_all($tid));
+                $vid = taxonomy_term_load($tid)->vid;
+
+                $i = 1;
+                $terms = taxonomy_get_tree($vid, 0, 1);
+                foreach ($terms as $term) {
+                    $items[$i][] = array(
+                        'data' => l($term->name, 'taxonomy/term/' . $term->tid), //取出每一个发表的文章
+                        'tid'=>$term->tid,
+                    );
+                }
+                $i++;
+                $active = array();
+                foreach ($data as $item) {
+                    $active[]=$item->tid;
+                    $terms = taxonomy_get_tree($vid, $item->tid, 1);
+                    foreach ($terms as $term) {
+                        $items[$i][] = array(
+                            'data' => l($term->name, 'taxonomy/term/' . $term->tid), //取出每一个发表的文章
+                            'tid'=>$term->tid,
+                        );
+                    }
+                    $i++;
+                }
+                if (empty($items)) {
+                    $block['content'] = t('no post avaliable');
+                    //否则作为主题装入内容（字母不能错）
+                } else {
+//                    $block['content'] = theme('tchart_side_nav', array(
+//                        'items' => $items
+//                    ));
+                    $out='';
+                    foreach($items as $aa){
+                        $out.= theme('tchart_side_nav',array('items'=>$aa,'active'=>$active)).'<br>';
+                    }
+                    $block['content']=$out;
+                }
+                return $block;
+            }
+            break;
+
+    }
+
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function tchart_theme($existing, $type, $theme, $path)
+{
+    return array(
+        'tchart_side_nav' => array(
+            'variables' => array(
+                'items' => NULL,
+                'title' => NULL,
+                'active' => array(),
+                'type' => 'ul',
+                'attributes' => array(),
+            ),
+        ),
+        'tchart_top_nav' => array(
+            'variables' => array(
+                'items' => NULL,
+                'title' => NULL,
+                'active' => array(),
+                'type' => 'ul',
+                'attributes' => array(),
+            ),
+        ),
+    );
+}
+
+/**
+ * 侧边导航样式
+ */
+function theme_tchart_side_nav($variables)
+{
+    $items = $variables['items'];
+    $title = $variables['title'];
+    $type = $variables['type'];
+    $active = $variables['active'];
+    $attributes = $variables['attributes'];
+
+    // Only output the list container and title, if there are any list items.
+    // Check to see whether the block title exists before adding a header.
+    // Empty headers are not semantic and present accessibility challenges.
+    $output = '<div class="side-nav">';
+    if (isset($title) && $title !== '') {
+        $output .= '<h3>' . $title . '</h3>';
+    }
+
+    if (!empty($items)) {
+        $output .= "<$type" . drupal_attributes($attributes) . '>';
+        $num_items = count($items);
+        $i = 0;
+        foreach ($items as $item) {
+            $attributes = array();
+            $children = array();
+            $data = '';
+            $i++;
+            if (is_array($item)) {
+                foreach ($item as $key => $value) {
+                    if ($key == 'data') {
+                        $data = $value;
+                    } elseif ($key == 'children') {
+                        $children = $value;
+                    } else {
+                        $attributes[$key] = $value;
+                    }
+                }
+            } else {
+                $data = $item;
+            }
+            if (count($children) > 0) {
+                // Render nested list.
+                $data .= theme_item_list(array('items' => $children, 'title' => NULL, 'type' => $type, 'attributes' => $attributes));
+            }
+            if ($i == 1) {
+                $attributes['class'][] = 'first';
+            }
+            if ($i == $num_items) {
+                $attributes['class'][] = 'last';
+            }
+            //如果是本term或者父term则添加类active
+            if(in_array($item['tid'],$active)){
+                $attributes['class'][]='active';
+            }
+            $output .= '<li' . drupal_attributes($attributes).'>' . $data . "</li>\n";
+        }
+        $output .= "</$type>";
+    }
+    $output .= '</div>';
+    return $output;
+}
+
+/**
+ * 上方导航样式
+ */
+function theme_tchart_top_nav($variables){
+    $items = $variables['items'];
+    $title = $variables['title'];
+    $type = $variables['type'];
+    $active = $variables['active'];
+    $attributes = $variables['attributes'];
+}
+
+function tchart_page_build()
+{
+    drupal_add_css(drupal_get_path('module', 'tchart') . '/css/tchart.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
+}
