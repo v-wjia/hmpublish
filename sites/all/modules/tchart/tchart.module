@@ -239,9 +239,9 @@ function tchart_block_view($delta = '')
         case 'side_navigation':
             if (user_access('access content')) {
 
-                if(arg(0)=='taxonomy'&&arg(1)=='term'){
-                    $tid=arg(2);
-                }else{
+                if (arg(0) == 'taxonomy' && arg(1) == 'term') {
+                    $tid = arg(2);
+                } else {
                     break;
                 }
 
@@ -254,39 +254,95 @@ function tchart_block_view($delta = '')
                 foreach ($terms as $term) {
                     $items[$i][] = array(
                         'data' => l($term->name, 'taxonomy/term/' . $term->tid), //取出每一个发表的文章
-                        'tid'=>$term->tid,
+                        'tid' => $term->tid,
                     );
                 }
                 $i++;
                 $active = array();
                 foreach ($data as $item) {
-                    $active[]=$item->tid;
+                    $active[] = $item->tid;
                     $terms = taxonomy_get_tree($vid, $item->tid, 1);
                     foreach ($terms as $term) {
                         $items[$i][] = array(
                             'data' => l($term->name, 'taxonomy/term/' . $term->tid), //取出每一个发表的文章
-                            'tid'=>$term->tid,
+                            'tid' => $term->tid,
                         );
                     }
                     $i++;
                 }
                 if (empty($items)) {
                     $block['content'] = t('no post avaliable');
-                    //否则作为主题装入内容（字母不能错）
                 } else {
-//                    $block['content'] = theme('tchart_side_nav', array(
-//                        'items' => $items
-//                    ));
-                    $out='';
-                    foreach($items as $aa){
-                        $out.= theme('tchart_side_nav',array('items'=>$aa,'active'=>$active)).'<br>';
+                    $output = '';
+                    foreach ($items as $entry) {
+                        $output .= theme('tchart_side_nav', array('items' => $entry, 'active' => $active)) . '<br>';
                     }
-                    $block['content']=$out;
+                    $block['content'] = $output;
                 }
                 return $block;
             }
             break;
 
+
+        case 'top_navigation':
+            if (user_access('access content')) {
+
+                if (arg(0) == 'taxonomy' && arg(1) == 'term') {
+                    $tid = arg(2);
+                    $vid = taxonomy_term_load($tid)->vid;
+                } else if (drupal_is_front_page()) {
+                    $tid = -1;
+                    $vid = $tid;
+                } else {
+                    $tid = -2;
+                    $vid = $tid;
+                }
+
+//                $current_term = taxonomy_term_load($tid);
+//                $data = array_reverse(taxonomy_get_parents_all($tid));
+
+                $items = array();
+                $active = array();
+                if ($tid >= -1) {
+                    $active = array($vid);
+                }
+
+                $vocabularies = taxonomy_vocabulary_load_multiple(FALSE);
+                //加上首页
+                $items[] = array(
+                    'data' => l(t('Home'), ''),
+                    'vid' => -1,
+                );
+                //加上其他页
+                foreach ($vocabularies as $vocabulary) {
+                    if (variable_get('tchart_vocabulary_' . $vocabulary->vid, FALSE)) {
+                        $single_terms = taxonomy_get_tree($vocabulary->vid);
+                        if (!empty($single_terms)) {
+                            $items[] = array(
+                                'data' => l($vocabulary->name, 'taxonomy/term/' . $single_terms[0]->tid),
+                                'vid' => $vocabulary->vid,
+                            );
+                        } else {
+                            $items[] = array(
+                                'data' => $vocabulary->name,
+                                'vid' => $vocabulary->vid,
+                            );
+                        }
+                    }
+                }
+
+                if (empty($items)) {
+                    $block['content'] = t('no post avaliable');
+                } else {
+                    $output = '';
+                    $output .= theme('tchart_top_nav', array('items' => $items, 'active' => $active)) . '<br>';
+                    $block['content'] = $output;
+                }
+
+
+                return $block;
+            }
+            break;
     }
 
 }
@@ -371,10 +427,10 @@ function theme_tchart_side_nav($variables)
                 $attributes['class'][] = 'last';
             }
             //如果是本term或者父term则添加类active
-            if(in_array($item['tid'],$active)){
-                $attributes['class'][]='active';
+            if (in_array($item['tid'], $active)) {
+                $attributes['class'][] = 'active';
             }
-            $output .= '<li' . drupal_attributes($attributes).'>' . $data . "</li>\n";
+            $output .= '<li' . drupal_attributes($attributes) . '>' . $data . "</li>\n";
         }
         $output .= "</$type>";
     }
@@ -385,12 +441,46 @@ function theme_tchart_side_nav($variables)
 /**
  * 上方导航样式
  */
-function theme_tchart_top_nav($variables){
+function theme_tchart_top_nav($variables)
+{
     $items = $variables['items'];
     $title = $variables['title'];
     $type = $variables['type'];
     $active = $variables['active'];
     $attributes = $variables['attributes'];
+
+    $output = '<div class="top-nav">';
+    if (isset($title) && $title !== '') {
+        $output .= '<h3>' . $title . '</h3>';
+    }
+
+    if (!empty($items)) {
+        $output .= "<$type" . drupal_attributes($attributes) . '>';
+
+        foreach ($items as $item) {
+            $attributes = array();
+            $children = array();
+            $data = '';
+            if (is_array($item)) {
+                foreach ($item as $key => $value) {
+                    if ($key == 'data') {
+                        $data = $value;
+                    }
+                }
+            } else {
+                $data = $item;
+            }
+
+            //如果是本term或者父term则添加类active
+            if (in_array($item['vid'], $active)) {
+                $attributes['class'][] = 'active';
+            }
+            $output .= '<li' . drupal_attributes($attributes) . '>' . $data . "</li>\n";
+        }
+        $output .= "</$type>";
+    }
+    $output .= '</div>';
+    return $output;
 }
 
 function tchart_page_build()
