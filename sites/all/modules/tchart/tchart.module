@@ -187,25 +187,25 @@ function taxonomy_show($term)
             '#markup' => render_echarts($settings),
             '#suffix' => '</p>',
         );
+    }
+    //显示其余文章
+    if ($nids = taxonomy_select_nodes($term->tid, TRUE, variable_get('default_nodes_main', 10))) {
+        $nodes = node_load_multiple($nids);
+        $build += node_view_multiple($nodes);
+        $build['pager'] = array(
+            '#theme' => 'pager',
+            '#weight' => 5,
+        );
     } else {
-        //否则正常显示
-        if ($nids = taxonomy_select_nodes($term->tid, TRUE, variable_get('default_nodes_main', 10))) {
-            $nodes = node_load_multiple($nids);
-            $build += node_view_multiple($nodes);
-            $build['pager'] = array(
-                '#theme' => 'pager',
-                '#weight' => 5,
-            );
-        } else {
-            $build['no_content'] = array(
-                '#prefix' => '<p>',
-                '#markup' => t('There is currently no content classified with this term.'),
-                '#suffix' => '</p>',
-            );
-        }
+        $build['no_content'] = array(
+            '#prefix' => '<p>',
+            '#markup' => t('There is currently no content classified with this term.'),
+            '#suffix' => '</p>',
+        );
     }
 
-    return $build;
+
+return $build;
 
 }
 
@@ -224,7 +224,10 @@ function tchart_block_info()
         'info' => t('Top navigation'),//The name that will appear in the block list.
         'cache' => DRUPAL_CACHE_PER_ROLE     //default
     );
-
+    $blocks['top_secondary_navigation'] = array(
+        'info' => t('Top secondary navigation'),//The name that will appear in the block list.
+        'cache' => DRUPAL_CACHE_PER_ROLE     //default
+    );
     return $blocks;
 }
 
@@ -236,70 +239,40 @@ function tchart_block_view($delta = '')
 {
 
     switch ($delta) {
+        case 'top_secondary_navigation':
         case 'side_navigation':
+            $page_term=get_page_term();
+            $tid=$page_term['tid'];
+            $vid=$page_term['vid'];
+            if(!variable_get('tchart_vocabulary_'.$vid,FALSE)){
+                break;
+            }
+            if('tchart_tex')
             if (user_access('access content')) {
+                $depth = 3;
+                global $tchart_cache_content;
 
-                if (arg(0) == 'taxonomy' && arg(1) == 'term') {
-                    $tid = arg(2);
+                if (!isset($tchart_cache_content)) {
+                    tchart_get_block_content($tid, $depth);
+                }
+                if ($delta == 'side_navigation') {
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active']);
+                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active']);
                 } else {
-                    break;
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_top_nav', 'tid');
+
                 }
 
-
-                $data = array_reverse(taxonomy_get_parents_all($tid));
-                $vid = taxonomy_term_load($tid)->vid;
-
-                $i = 1;
-                $terms = taxonomy_get_tree($vid, 0, 1);
-                foreach ($terms as $term) {
-                    $items[$i][] = array(
-                        'data' => l($term->name, 'taxonomy/term/' . $term->tid), //取出每一个发表的文章
-                        'tid' => $term->tid,
-                    );
-                }
-                $i++;
-                $active = array();
-                foreach ($data as $item) {
-                    $active[] = $item->tid;
-                    $terms = taxonomy_get_tree($vid, $item->tid, 1);
-                    foreach ($terms as $term) {
-                        $items[$i][] = array(
-                            'data' => l($term->name, 'taxonomy/term/' . $term->tid), //取出每一个发表的文章
-                            'tid' => $term->tid,
-                        );
-                    }
-                    $i++;
-                }
-                if (empty($items)) {
-                    $block['content'] = t('no post avaliable');
-                } else {
-                    $output = '';
-                    foreach ($items as $entry) {
-                        $output .= theme('tchart_side_nav', array('items' => $entry, 'active' => $active)) . '<br>';
-                    }
-                    $block['content'] = $output;
-                }
                 return $block;
             }
             break;
 
-
         case 'top_navigation':
             if (user_access('access content')) {
+                $page_term=get_page_term();
+                $tid=$page_term['tid'];
+                $vid=$page_term['vid'];
 
-                if (arg(0) == 'taxonomy' && arg(1) == 'term') {
-                    $tid = arg(2);
-                    $vid = taxonomy_term_load($tid)->vid;
-                } else if (drupal_is_front_page()) {
-                    $tid = -1;
-                    $vid = $tid;
-                } else {
-                    $tid = -2;
-                    $vid = $tid;
-                }
-
-//                $current_term = taxonomy_term_load($tid);
-//                $data = array_reverse(taxonomy_get_parents_all($tid));
 
                 $items = array();
                 $active = array();
@@ -318,10 +291,7 @@ function tchart_block_view($delta = '')
                     if (variable_get('tchart_vocabulary_' . $vocabulary->vid, FALSE)) {
                         $single_terms = taxonomy_get_tree($vocabulary->vid);
                         if (!empty($single_terms)) {
-                            $items[] = array(
-                                'data' => l($vocabulary->name, 'taxonomy/term/' . $single_terms[0]->tid),
-                                'vid' => $vocabulary->vid,
-                            );
+                            $items[] = get_vocabulary_renderable_array($single_terms[0], 2, $vocabulary->name, $vocabulary->vid, 'vid');
                         } else {
                             $items[] = array(
                                 'data' => $vocabulary->name,
@@ -330,7 +300,6 @@ function tchart_block_view($delta = '')
                         }
                     }
                 }
-
                 if (empty($items)) {
                     $block['content'] = t('no post avaliable');
                 } else {
@@ -367,6 +336,7 @@ function tchart_theme($existing, $type, $theme, $path)
             'variables' => array(
                 'items' => NULL,
                 'title' => NULL,
+                'active_id' => 'vid',
                 'active' => array(),
                 'type' => 'ul',
                 'attributes' => array(),
@@ -446,16 +416,21 @@ function theme_tchart_top_nav($variables)
     $items = $variables['items'];
     $title = $variables['title'];
     $type = $variables['type'];
+    $active_id = $variables['active_id'];
     $active = $variables['active'];
     $attributes = $variables['attributes'];
 
-    $output = '<div class="top-nav">';
+//    测试:
+//    $output = '<div class="top-nav">';
+    $output = '<div id="main-menu" class="navigation">';
     if (isset($title) && $title !== '') {
         $output .= '<h3>' . $title . '</h3>';
     }
 
     if (!empty($items)) {
-        $output .= "<$type" . drupal_attributes($attributes) . '>';
+        $output .= "<$type" . drupal_attributes($attributes) . ' id="main-menu-links" class="links clearfix">';
+//        测试:
+//        $output .= "<$type" . drupal_attributes($attributes) . '>';
 
         foreach ($items as $item) {
             $attributes = array();
@@ -472,10 +447,10 @@ function theme_tchart_top_nav($variables)
             }
 
             //如果是本term或者父term则添加类active
-            if (in_array($item['vid'], $active)) {
+            if (in_array($item[$active_id], $active)) {
                 $attributes['class'][] = 'active';
             }
-            $output .= '<li' . drupal_attributes($attributes) . '>' . $data . "</li>\n";
+            $output .= '<li ' . drupal_attributes($attributes) . '>' . $data . "</li>\n";
         }
         $output .= "</$type>";
     }
