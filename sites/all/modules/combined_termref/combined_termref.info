@@ -1,0 +1,12 @@
+name = Combined Term reference field
+description = Allows Term reference fields to source terms from 3 vocabularies, rather than just one.
+vocabulary
+package = Fields
+core = 7.x
+
+; Information added by Drupal.org packaging script on 2014-03-19
+version = "7.x-1.0-beta1+2-dev"
+core = "7.x"
+project = "combined_termref"
+datestamp = "1395227057"
+
