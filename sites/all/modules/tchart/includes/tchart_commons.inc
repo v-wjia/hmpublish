@@ -129,11 +129,13 @@ function tchart_render_navigation($items, $active, $theme='tchart_side_nav', $ac
  * 获得当前页面的tid和vid
  */
 function get_page_term(){
-    if(!empty($node=menu_get_object())){
+    $node=menu_get_object();
+    $term=menu_get_object('taxonomy_term',2);
+    if(!empty($node)){
         //测试:field_name
         $current_term=current(current($node->field_22222))['taxonomy_term'];
         return array('vid'=>$current_term->vid,'tid'=>$current_term->tid);
-    }elseif(!empty($term=menu_get_object('taxonomy_term',2))){
+    }elseif(!empty($term)){
         return array('vid'=>$term->vid,'tid'=>$term->tid);
     }elseif(drupal_is_front_page()){
         return array('vid'=>-1,'tid'=>-1);
