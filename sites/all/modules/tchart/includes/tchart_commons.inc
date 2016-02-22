@@ -98,6 +98,10 @@ function tchart_get_block_content($tid,$depth){
     //获取其余子term
     foreach ($data as $item) {
         $active[] = $item->tid;
+        //到达最大深度则更深term数据不显示
+        if($i>$depth){
+            break;
+        }
         $terms = taxonomy_get_tree($vid, $item->tid, 1);
         foreach ($terms as $term) {
             $items[$i][] = array(
@@ -107,13 +111,7 @@ function tchart_get_block_content($tid,$depth){
             );
         }
         $i++;
-        //到达最大深度则更深term数据不显示
-        if($i>$depth){
-            break;
-        }
     }
-    //标记本身
-    $active[]=$tid;
     $tchart_cache_content=array('items'=>$items,'active'=>$active);
 }
 
@@ -127,6 +125,9 @@ function tchart_render_navigation($items, $active, $theme='tchart_side_nav', $ac
     return $output;
 }
 
+/**
+ * 获得当前页面的tid和vid
+ */
 function get_page_term(){
     if(!empty($node=menu_get_object())){
         //测试:field_name

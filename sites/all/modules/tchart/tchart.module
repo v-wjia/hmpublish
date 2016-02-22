@@ -12,10 +12,19 @@ function tchart_menu()
     $items = array();
     $items['taxonomy/term/%taxonomy_term'] = array(
 
-        'title' => 'Current posts',
+        'title' => 'Taxonomy show',
         'description' => '设置',
         'page callback' => 'taxonomy_show',      //将会回调这个方法
         'page arguments' => array(2),
+        'access arguments' => array('access content'),
+//        'type'=>MENU_NORMAL_ITEM,
+    );
+    $items['taxonomy/term/%taxonomy_term/report/%'] = array(
+
+        'title' => 'Taxonomy report',
+        'description' => '设置',
+        'page callback' => 'taxonomy_report',      //统计分析报告专用
+        'page arguments' => array(2, 4),
         'access arguments' => array('access content'),
 //        'type'=>MENU_NORMAL_ITEM,
     );
@@ -114,10 +123,10 @@ function tchart_term_form()
                     '#default_value' => variable_get('tchart_term_' . $term->tid, FALSE),
                     '#required' => FALSE,
                 );
-                $form['tchart_term_sql_' . $term->tid] = array(
+                $form['tchart_term_db_' . $term->tid] = array(
                     '#type' => 'textfield',
-                    '#title' => t('SQL语句'),
-                    '#default_value' => variable_get('tchart_term_sql_' . $term->tid, 'SELECT * FROM AAA WHERE "tid"=' . $term->tid),
+                    '#title' => t('数据库表'),
+                    '#default_value' => variable_get('tchart_term_db_' . $term->tid, 'rainwater_utilization'),
                     '#required' => FALSE,
                 );
             }
@@ -143,21 +152,21 @@ function taxonomy_show($term)
     // explicitly set the page title to be the term title.
     drupal_set_title($term->name);
 
-    // Build breadcrumb based on the hierarchy of the term.
-    $current = (object)array(
-        'tid' => $term->tid,
-    );
-    // @todo This overrides any other possible breadcrumb and is a pure hard-coded
-    //   presumption. Make this behavior configurable per vocabulary or term.
-    $breadcrumb = array();
-    while ($parents = taxonomy_get_parents($current->tid)) {
-        $current = array_shift($parents);
-        $breadcrumb[] = l($current->name, 'taxonomy/term/' . $current->tid);
-    }
-    $breadcrumb[] = l(t('Home'), NULL);
-    $breadcrumb = array_reverse($breadcrumb);
-    drupal_set_breadcrumb($breadcrumb);
-    drupal_add_feed('taxonomy/term/' . $term->tid . '/feed', 'RSS - ' . $term->name);
+    /*    // Build breadcrumb based on the hierarchy of the term.
+        $current = (object)array(
+            'tid' => $term->tid,
+        );
+        // @todo This overrides any other possible breadcrumb and is a pure hard-coded
+        //   presumption. Make this behavior configurable per vocabulary or term.
+        $breadcrumb = array();
+        while ($parents = taxonomy_get_parents($current->tid)) {
+            $current = array_shift($parents);
+            $breadcrumb[] = l($current->name, 'taxonomy/term/' . $current->tid);
+        }
+        $breadcrumb[] = l(t('Home'), NULL);
+        $breadcrumb = array_reverse($breadcrumb);
+        drupal_set_breadcrumb($breadcrumb);
+        drupal_add_feed('taxonomy/term/' . $term->tid . '/feed', 'RSS - ' . $term->name);*/
 
     // Set the term path as the canonical URL to prevent duplicate content.
     $uri = entity_uri('taxonomy_term', $term);
@@ -180,11 +189,11 @@ function taxonomy_show($term)
     //如果被选中,则显示echarts
     if (variable_get('tchart_term_' . (string)$term->tid, FALSE) && variable_get('tchart_vocabulary_' . (string)$term->vid, FALSE)) {
 
-        $settings['echart'] = queryss($term);
-
+//        $settings['echart'] = get_charts($term);
+        $charts = get_charts($term);
         $build['content'] = array(
             '#prefix' => '<p>',
-            '#markup' => render_echarts($settings),
+            '#markup' => $charts,
             '#suffix' => '</p>',
         );
     }
@@ -205,10 +214,44 @@ function taxonomy_show($term)
     }
 
 
-return $build;
+    return $build;
 
 }
 
+function taxonomy_report($term, $select_time = '')
+{
+
+    // If there is a menu link to this term, the link becomes the last part of
+    // the active trail, and the link name becomes the page title. Thus, we must
+    // explicitly set the page title to be the term title.
+    drupal_set_title($term->name);
+    // Set the term path as the canonical URL to prevent duplicate content.
+    $uri = entity_uri('taxonomy_term', $term);
+    drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);
+    // Set the non-aliased path as a default shortlink.
+    drupal_add_html_head_link(array('rel' => 'shortlink', 'href' => url($uri['path'], array_merge($uri['options'], array('alias' => TRUE)))), TRUE);
+
+    // Normally we would call taxonomy_term_show() here, but for backwards
+    // compatibility in Drupal 7 we do not want to do that (it produces different
+    // data structures and HTML markup than what Drupal 7 released with). Calling
+    // taxonomy_term_view() directly provides essentially the same thing, but
+    // allows us to wrap the rendered term in our desired array structure.
+    $build['term_heading'] = array(
+        '#prefix' => '<div class="term-listing-heading">',
+        '#suffix' => '</div>',
+        'term' => taxonomy_term_view($term, 'full'),
+    );
+
+    //显示报告
+    if ($select_time != '') {
+
+    } else {
+
+    }
+
+
+    return $build;
+}
 
 /**
  * Implements hook_block_info().
@@ -241,37 +284,37 @@ function tchart_block_view($delta = '')
     switch ($delta) {
         case 'top_secondary_navigation':
         case 'side_navigation':
-            $page_term=get_page_term();
-            $tid=$page_term['tid'];
-            $vid=$page_term['vid'];
-            if(!variable_get('tchart_vocabulary_'.$vid,FALSE)){
+            $page_term = get_page_term();
+            $tid = $page_term['tid'];
+            $vid = $page_term['vid'];
+            if (!variable_get('tchart_vocabulary_' . $vid, FALSE)) {
                 break;
             }
-            if('tchart_tex')
-            if (user_access('access content')) {
-                $depth = 3;
-                global $tchart_cache_content;
+            if ('tchart_tex')
+                if (user_access('access content')) {
+                    $depth = 3;
+                    global $tchart_cache_content;
 
-                if (!isset($tchart_cache_content)) {
-                    tchart_get_block_content($tid, $depth);
+                    if (!isset($tchart_cache_content)) {
+                        tchart_get_block_content($tid, $depth);
+                    }
+                    if ($delta == 'side_navigation') {
+                        $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active']);
+                        $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active']);
+                    } else {
+                        $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_top_nav', 'tid');
+
+                    }
+
+                    return $block;
                 }
-                if ($delta == 'side_navigation') {
-                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active']);
-                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active']);
-                } else {
-                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_top_nav', 'tid');
-
-                }
-
-                return $block;
-            }
             break;
 
         case 'top_navigation':
             if (user_access('access content')) {
-                $page_term=get_page_term();
-                $tid=$page_term['tid'];
-                $vid=$page_term['vid'];
+                $page_term = get_page_term();
+                $tid = $page_term['tid'];
+                $vid = $page_term['vid'];
 
 
                 $items = array();
@@ -333,6 +376,16 @@ function tchart_theme($existing, $type, $theme, $path)
             ),
         ),
         'tchart_top_nav' => array(
+            'variables' => array(
+                'items' => NULL,
+                'title' => NULL,
+                'active_id' => 'vid',
+                'active' => array(),
+                'type' => 'ul',
+                'attributes' => array(),
+            ),
+        ),
+        'tchart_table'=>array(
             'variables' => array(
                 'items' => NULL,
                 'title' => NULL,
@@ -456,6 +509,13 @@ function theme_tchart_top_nav($variables)
     }
     $output .= '</div>';
     return $output;
+}
+
+/**
+ * 表格样式
+ */
+function theme_tchart_table($variables){
+
 }
 
 function tchart_page_build()
