@@ -147,6 +147,10 @@ function tchart_term_form()
  */
 function taxonomy_show($term)
 {
+    if(variable_get('tchart_term_db_' . $term->tid, 'rainwater_utilization')=='groundwater_quality'){
+        return taxonomy_report($term);
+    }
+
     // If there is a menu link to this term, the link becomes the last part of
     // the active trail, and the link name becomes the page title. Thus, we must
     // explicitly set the page title to be the term title.
@@ -243,12 +247,14 @@ function taxonomy_report($term, $select_time = '')
     );
 
     //显示报告
-    if ($select_time != '') {
-
-    } else {
-
-    }
-
+    $output=groundwater_quality($term->tid,$select_time);
+//    $build[]
+    $build['table'] = array(
+        '#theme'=>'tchart_report',
+        '#items'=>$output['items'],
+        '#header'=>$output['header'],
+        '#date'=>$output['date'],
+    );
 
     return $build;
 }
@@ -290,24 +296,24 @@ function tchart_block_view($delta = '')
             if (!variable_get('tchart_vocabulary_' . $vid, FALSE)) {
                 break;
             }
-            if ('tchart_tex')
-                if (user_access('access content')) {
-                    $depth = 3;
-                    global $tchart_cache_content;
+//            if ('tchart_tex')
+            if (user_access('access content')) {
+                $depth = 3;
+                global $tchart_cache_content;
 
-                    if (!isset($tchart_cache_content)) {
-                        tchart_get_block_content($tid, $depth);
-                    }
-                    if ($delta == 'side_navigation') {
-                        $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active']);
-                        $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active']);
-                    } else {
-                        $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_top_nav', 'tid');
-
-                    }
-
-                    return $block;
+                if (!isset($tchart_cache_content)) {
+                    tchart_get_block_content($tid, $depth);
                 }
+                if ($delta == 'side_navigation') {
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active']);
+                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active']);
+                } else {
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_top_nav', 'tid');
+
+                }
+
+                return $block;
+            }
             break;
 
         case 'top_navigation':
@@ -385,13 +391,11 @@ function tchart_theme($existing, $type, $theme, $path)
                 'attributes' => array(),
             ),
         ),
-        'tchart_table'=>array(
+        'tchart_report' => array(
             'variables' => array(
                 'items' => NULL,
-                'title' => NULL,
-                'active_id' => 'vid',
-                'active' => array(),
-                'type' => 'ul',
+                'header' => NULL,
+                'date' => array(),
                 'attributes' => array(),
             ),
         ),
@@ -514,7 +518,42 @@ function theme_tchart_top_nav($variables)
 /**
  * 表格样式
  */
-function theme_tchart_table($variables){
+function theme_tchart_report($variables)
+{
+    $header = $variables['header'];
+    $items = $variables['items'];
+    $date = $variables['date'];
+
+    $output = '<div id="haimiam-report" class="haimian-table">';
+
+
+    $output .= '<table>';
+    //渲染时间
+    $output.='<tr>';
+    foreach ($date as $date_link) {
+        $output.= "<td class='$date_link[1]'>".$date_link[0].'</td>';
+    }
+    $output .= '</table>';
+
+    $output .= '<table>';
+    //渲染表头
+    $output.='<tr>';
+    foreach ($header as $one_head) {
+        $output.= '<td>'.$one_head.'</td>';
+    }
+    $output.='</tr>';
+    //渲染数据
+    foreach ($items as $entries) {
+        $output.='<tr>';
+        foreach ($entries as $entry) {
+            $output.= '<td>'.$entry.'</td>';
+        }
+        $output.='</tr>';
+    }
+    $output.='</table>';
+    $output.='</div>';
+
+    return $output;
 
 }
 

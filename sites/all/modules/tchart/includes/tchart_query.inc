@@ -32,6 +32,9 @@ function get_charts($term)
         case 'ecologicalbankline_data':
             $settings += ecologicalbankline_data($tid);
             break;
+        case 'groundwater_quality':
+//            $output .= groundwater_quality($tid);
+            break;
     }
     if (!empty($settings)) {
         $output = render_echarts(array('echart'=>$settings)) . $output;
@@ -445,6 +448,84 @@ function ecologicalbankline_data($tid)
     $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
     return $settings;
 }
+
+
+/**
+ * 地下水质表格
+ */
+function groundwater_quality($tid,$date=''){
+    $output = '';
+    if($date==''){
+        $date_query=db_select('groundwater_quality','n')->fields('n')->condition('t_id',$tid)->orderBy('samplingtime','ASE')->range(0,1)->execute();
+        foreach ($date_query as $item) {
+            $date= strtotime($item->samplingtime);
+            break;
+        }
+    }else{
+        $date=strtotime($date);
+    }
+
+    $header=array('监测点','测定指标','测定值','参考值','是否达标');
+    $items=array();
+    $date_table=array();
+
+    $query=db_select('groundwater_quality','n')->fields('n')->orderBy('equipment',"ASC");
+
+    if(!is_array($tid)){
+        $tid=array($tid);
+    }
+    foreach ($tid as $item) {
+        $query->condition('t_id',$item);
+    }
+
+    $result=$query->condition('samplingtime',date('Y-m-d H:i:s',$date))->execute();
+
+    $field=array('PH'=>'PH值','totalhardness'=>'总硬度','CODMn'=>'高锰酸盐指数','NH3_N'=>'氨氮','chloride'=>'氯化物','nitrate'=>'硝酸盐','fluoride'=>'氟化物','FE'=>'铁','Ecoil'=>'总大肠杆菌');
+    $reference=array('PH'=>'7','totalhardness'=>'8','CODMn'=>'12','NH3_N'=>'33','chloride'=>'44','nitrate'=>'32','fluoride'=>'12','FE'=>'6','Ecoil'=>'63');
+    foreach ($result as $item) {
+        @$result_item=(array)$item;
+        foreach ($result_item as $key=>$value) {
+            if(array_key_exists($key,$field))
+            $items[]=build_grounderwater_array($result_item['equipment'],$field[$key],$value,$reference[$key],'达标');
+        }
+    }
+
+    $query_date= db_select('groundwater_quality','n')->distinct()->fields('n',array('samplingtime'))->orderBy('samplingtime','ASC')->execute();
+    foreach ($query_date as $has_date) {
+        $format_show=date('Y/m/d',strtotime($has_date->samplingtime));
+        $format_time=date('Y-m-d',strtotime($has_date->samplingtime));
+        if($date==strtotime($has_date->samplingtime)){
+            $date_table[]=array(l($format_show,'taxonomy/term/'.$tid[0].'/report/'.$format_time),'active');
+        }else{
+            $date_table[]=array(l($format_show,'taxonomy/term/'.$tid[0].'/report/'.$format_time),'');
+        }
+    }
+    return array('date'=>$date_table,'header'=>$header,'items'=>$items);
+}
+
+function build_grounderwater_array($equipment,$field,$value,$reference,$result){
+//    $output='';
+//    $output.='<table><tr>';
+//    $output.='<td>'.$equipment.'</td>';
+//    $output.='<td>'.$field.'</td>';
+//    $output.='<td>'.$value.'</td>';
+//    $output.='<td>'.$reference.'</td>';
+//    $output.='<td>'.$result.'</td>';
+//    $output.='</tr></table>';
+    return array($equipment,$field,$value,$reference,$result);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)

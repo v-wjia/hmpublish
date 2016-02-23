@@ -1,3 +1,4 @@
 name = tchart
 description = Relpace Taxonomy to echart.
+dependencies[] = echarts
 core = 7.x
