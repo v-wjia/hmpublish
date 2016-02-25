@@ -35,6 +35,9 @@ function get_charts($term)
         case 'groundwater_quality':
 //            $output .= groundwater_quality($tid);
             break;
+        case 'groundwaterlevel':
+            $output .= groundwaterlevel($tid);
+            break;
     }
     if (!empty($settings)) {
         $output = render_echarts(array('echart'=>$settings)) . $output;
@@ -320,28 +323,69 @@ function npsp_data($tid)
 /*
  * 地下水位
  */
-function groundwaterlevel($tid, $name, $containerId = -1)
+function groundwaterlevel($tid)
 {
-    //地下水位
-    $query = db_select('groundwaterlevel', 'n');
-    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-    $data = $query->execute();
 
-    $category = array();
-    $grandwaterlevel = array();
-    foreach ($data as $entry) {
-        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
-        $grandwaterlevel[] = $entry->$grandwaterlevel;
+    if(variable_get('tchart_show_deep_'.$tid,FALSE)){
+        //添加:获取深度选项
+
     }
 
-    $query_data[] = $grandwaterlevel;
 
-    $legend = array($name);
-    $series = build_series($query_data, $legend, array('line'));
-    $xAxis = build_category_axis($category);
-    $yAxis = build_value_axis(array(array('地下水深', 'cm')));
-    $settings[] = build_settings($series, $legend, $xAxis, $yAxis, $containerId);
-    return $settings;
+    $tids=array($tid);
+    $result=array('legend'=>array(),'settings'=>array());
+    //地下水位
+    foreach ($tids as $db_tid) {
+        $query = db_select('groundwaterlevel', 'n');
+        $query->fields('n')->condition('t_id', array($tids))->orderBy('samplingtime', 'ASC');
+        $data = $query->execute();
+        $temp_result=groundwaterlevel_chart($data);
+        $result['legend']+=$temp_result['legend'];
+        $result['settings']+=$temp_result['settings'];
+    }
+    $set = tchart_build_timechart_array($result['legend'],$result['settings'],'',array('unit'=>'深度','per'=>'m'));
+
+    return theme('tchart_time_chart',$set);
+//    return $settings;
+}
+
+function groundwaterlevel_chart($data, $containerId = -1){
+
+    $category = array();
+    $chart_set = array();
+    $grandwaterlevel = array();
+    $i=0;
+    foreach ($data as $entry) {
+        $has_cat = FALSE;
+        foreach ($category as $cat) {
+            if($entry->location==$cat){
+                $has_cat = TRUE;
+                break;
+            }
+        }
+        if(!$has_cat){
+            $name=$entry->location;
+            $category[]=$name;
+            $chart_set[$name]['name']=$name;
+            $chart_set[$name]['type']='line';
+            $chart_set[$name]['data']=array();
+//            $chart_set[$name]['item']=array();
+        }
+//        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
+//        $grandwaterlevel[] = $entry->$grandwaterlevel;
+
+        foreach ($category as $cat) {
+
+            if($entry->location == $cat){
+                array_push($chart_set[$cat]['data'],array(strtotime($entry->samplingtime),$entry->groundwaterlevel));
+//                array_push($chart_set[$cat]['level'],$entry->groundwaterlevel);
+                break;
+            }
+        }
+    }
+    return array('legend'=>$category,'settings'=>$chart_set);
+
+//    return $settings;
 }
 
 /**
@@ -567,6 +611,44 @@ function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
     return $settings;
 }
 
+function build_time_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
+{
+
+    $settings = array(
+      'chartType' => 'line',
+      'useType' => array('line', 'bar'),
+//        'containerId' =>  'line_chart',
+      'options' => array(
+        'tooltip' => array('trigger' => 'item','formatter'=>'{a0}{b0} {b2}'),
+        'legend' => array(
+          'data' => $legend,
+        ),
+        'toolbox' => array(
+          'show' => TRUE,
+          'feature' => array(
+            'mark' => array('show' => TRUE),
+            'dataView' => array('show' => TRUE, 'readOnly' => false),
+            'magicType' => array(
+              'show' => TRUE,
+              'type' => array('line', 'bar')
+            ),
+            'restore' => array('show' => TRUE),
+            'saveAsImage' => array('show' => TRUE),
+          )
+        ),
+        'calculable' => TRUE,
+        'xAxis' => $xAxis,
+        'yAxis' => $yAxis,
+        'series' => $series,
+      ),
+
+    );
+    if ($containerId != -1) {
+        $settings += array('containerId' => $containerId);
+    }
+
+    return $settings;
+}
 
 function build_series($data, $name, $type, $yAxisIndex = 0)
 {
@@ -591,6 +673,32 @@ function build_series($data, $name, $type, $yAxisIndex = 0)
     return $series;
 }
 
+function build_time_series($data, $type, $yAxisIndex = 0)
+{
+
+
+    $series = array();
+    $count = 0;
+//    foreach ($data as $item) {
+        $entry = array(
+//          'name' => $item['name'],
+          'name' => 'serise',
+          'type' => $type[$count],
+          'showAllSymbol'=>TRUE,
+          'data' => '(function () {var d = [];var len = 0;var now = new Date();var value;while (len++ < 20) {d.push([new Date(2014, 9, 1, 0, len * 10000),(Math.random()*30).toFixed(2) - 0,(Math.random()*100).toFixed(2) - 0]);}return d;})()',
+        );
+        if (is_array($yAxisIndex)) {
+            $entry += array('yAxisIndex' => $yAxisIndex[$count]);
+        } else {
+            $entry += array('yAxisIndex' => $yAxisIndex);
+        }
+        $series[] = $entry;
+        $count++;
+//    }
+    print_r($series);
+    return $series;
+}
+
 function build_type($num, $type)
 {
     $type_arr = array();
@@ -610,6 +718,16 @@ function build_category_axis($category)
     );
 }
 
+function build_time_line_axis($splitNumber=10)
+{
+    return array(
+      '0' => array(
+        'type' => 'time',
+        'splitNumber' => $splitNumber,
+      )
+    );
+}
+
 function build_value_axis($name_label)
 {
     $axis = array();
@@ -622,4 +740,23 @@ function build_value_axis($name_label)
         );
     }
     return $axis;
+}
+
+/**
+ * 创建时间轴的可渲染数组
+ */
+function tchart_build_timechart_array($category,$settings,$title='',$unit = array('unit'=>'','per'=>'')){
+    $renderable = array();
+    if(!array_key_exists('unit',$unit)){
+        $unit['unit']='';
+    }
+    if(!array_key_exists('per',$unit)){
+        $unit['per']='';
+    }
+    $renderable['unit']=$unit;
+    $renderable['items']= $settings;
+    $renderable['legend']= $category;
+    $renderable['title']=$title;
+    $renderable['div_id']='';
+    return $renderable;
 }
