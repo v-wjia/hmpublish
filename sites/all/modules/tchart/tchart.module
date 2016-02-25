@@ -436,6 +436,12 @@ function theme_tchart_side_nav($variables) {
   $active = $variables['active'];
   $attributes = $variables['attributes'];
 
+  //测试:深层array
+//  if($items[0]['tid']==40){
+//	$items[0]['children']=array(array('data'=>l('hehehe','/taxonomy/term/77'),'tid'=>40,'children'=>array(array('data'=>l('hehehe','/taxonomy/term/444'),'tid'=>892))));
+//  }
+//  print_r($items);
+
   // Only output the list container and title, if there are any list items.
   // Check to see whether the block title exists before adding a header.
   // Empty headers are not semantic and present accessibility challenges.
@@ -443,55 +449,8 @@ function theme_tchart_side_nav($variables) {
   if (isset($title) && $title !== '') {
 	$output .= '<h3>' . $title . '</h3>';
   }
+  $output.= tchart_get_rendered_nav($type,$attributes,'tid',$active,$items);
 
-  if (!empty($items)) {
-	$output .= "<$type" . drupal_attributes($attributes) . '>';
-	$num_items = count($items);
-	$i = 0;
-	foreach ($items as $item) {
-	  $attributes = array();
-	  $children = array();
-	  $data = '';
-	  $i++;
-	  if (is_array($item)) {
-		foreach ($item as $key => $value) {
-		  if ($key == 'data') {
-			$data = $value;
-		  }
-		  elseif ($key == 'children') {
-			$children = $value;
-		  }
-		  else {
-			$attributes[$key] = $value;
-		  }
-		}
-	  }
-	  else {
-		$data = $item;
-	  }
-	  if (count($children) > 0) {
-		// Render nested list.
-		$data .= theme_item_list(array(
-		  'items' => $children,
-		  'title' => NULL,
-		  'type' => $type,
-		  'attributes' => $attributes
-		));
-	  }
-	  if ($i == 1) {
-		$attributes['class'][] = 'first';
-	  }
-	  if ($i == $num_items) {
-		$attributes['class'][] = 'last';
-	  }
-	  //如果是本term或者父term则添加类active
-	  if (in_array($item['tid'], $active)) {
-		$attributes['class'][] = 'active';
-	  }
-	  $output .= '<li' . drupal_attributes($attributes) . '>' . $data . "</li>\n";
-	}
-	$output .= "</$type>";
-  }
   $output .= '</div>';
   return $output;
 }
@@ -506,45 +465,56 @@ function theme_tchart_top_nav($variables) {
   $active_id = $variables['active_id'];
   $active = $variables['active'];
   $attributes = $variables['attributes'];
-
 //    测试:
 //    $output = '<div class="top-nav">';
   $output = '<div id="main-menu" class="navigation">';
-  if (isset($title) && $title !== '') {
-	$output .= '<h3>' . $title . '</h3>';
-  }
+  $output.=tchart_get_rendered_nav($type,$attributes,$active_id,$active,$items,'main-menu-links');
 
+  $output .= '</div>';
+
+
+  return $output;
+}
+
+/**
+ * 递归输出ul,li菜单
+ */
+function tchart_get_rendered_nav($type, $attributes, $active_id, $active, $items, $type_id=''){
+  $output='';
   if (!empty($items)) {
-	$output .= "<$type" . drupal_attributes($attributes) . ' id="main-menu-links" class="links clearfix">';
+	$output .= "<$type" . drupal_attributes($attributes) . ' id="'.$type_id.'" class="links clearfix">';
 //        测试:
 //        $output .= "<$type" . drupal_attributes($attributes) . '>';
 
 	foreach ($items as $item) {
-	  $attributes = array();
+	  $act_attributes = array();
 	  $children = array();
-	  $data = '';
-	  if (is_array($item)) {
-		foreach ($item as $key => $value) {
-		  if ($key == 'data') {
-			$data = $value;
-		  }
-		}
-	  }
-	  else {
-		$data = $item;
-	  }
+//	  $data = '';
+//	  if (is_array($item)) {
+//		foreach ($item as $key => $value) {
+//		  if ($key == 'data') {
+//			$data = $value;
+	  $data = $item['data'];
+//		  }
+//		}
+//	  }
+//	  else {
+//		$data = $item;
+//	  }
 
 	  //如果是本term或者父term则添加类active
 	  if (in_array($item[$active_id], $active)) {
-		$attributes['class'][] = 'active';
+		$act_attributes['class'][] = 'active';
 	  }
-	  $output .= '<li ' . drupal_attributes($attributes) . '>' . $data . "</li>\n";
+	  $act_attributes+=$attributes;
+	  $output .= '<li ' . drupal_attributes($act_attributes) . '>' . $data ."</li>\n";
+	  //存在子目录则继续渲染
+	  if(key_exists('children',$item)){
+		$output.=tchart_get_rendered_nav($type,$attributes,$active_id,$active,$item['children']);
+	  }
 	}
 	$output .= "</$type>";
   }
-  $output .= '</div>';
-
-
   return $output;
 }
 
@@ -608,12 +578,14 @@ function theme_tchart_time_chart($variables) {
 
   $output = '';
 
+  //legend
   $legend_out = '[';
   foreach ($legend as $one_legend) {
 	$legend_out.= "'".$one_legend."',";
   }
   $legend_out .=']';
 
+  //具体数据
   $series_out='[';
   foreach ($items as $item) {
 	$data_out='';
@@ -638,7 +610,7 @@ function theme_tchart_time_chart($variables) {
   }
   $series_out.=']';
 
-
+  //加载js
   drupal_add_js(drupal_get_path('module', 'echarts') . '/lib/echarts.js');
   drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
   $output .=
