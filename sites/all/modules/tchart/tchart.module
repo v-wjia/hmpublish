@@ -627,16 +627,22 @@ function theme_tchart_time_chart($variables) {
 //        subtext : \'dataZoom支持\'
     },
     tooltip : {
-        trigger: \'item\',
+        trigger: \'axis\',
         formatter : function (params) {
-            var date = new Date(params.value[0]);
+            var date = new Date(params[0].value[0]);
             data = date.getFullYear() + \'-\'
                    + (date.getMonth() + 1) + \'-\'
                    + date.getDate() + \' \'
                    + date.getHours() + \':\'
                    + date.getMinutes();
-            return params.seriesName +\'<br/>\'+ data + \'<br/>\'+
-                   + params.value[1] + \''.$unit['per'].'\';
+//            return "aaa"+params.seriesName +\'<br/>\'+ data + \'<br/>\'+
+//                   + params.value[1] + \''.$unit['per'].'\';
+
+			output = data + \'<br/>\';
+			for(var i=0;i<params.length;i++){
+	 			output += params[i].seriesName + " - " + params[i].value[1] + \''.$unit['per'].'\'+\'<br/>\';
+	 		}
+			return output;
         }
     },
     toolbox: {

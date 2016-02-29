@@ -6,10 +6,14 @@
  * Time: 下午12:20
  */
 
-
+/**
+ * 根据配置获取内容
+ */
 function get_charts($term) {
 
   $category = variable_get('tchart_term_db_' . $term->tid, 'rainwater_utilization');
+
+  taxonomy_get_children($term->tid);
   $settings = array();
   $tid = $term->tid;
   $output = '';
