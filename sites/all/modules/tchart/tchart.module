@@ -849,22 +849,67 @@ function theme_tchart_photo_wall($variables)
     if(empty($items)){
         return '';
     }
-    $output = '<div class="img-container">';
+    $output = '<style></style>
+			<script type="text/javascript">
+				jQuery(function(){
+					jQuery(".btn-right").click(function(){
+						jQuery("#img-inner").stop(true,true);
+						animatel();
+					});
+					jQuery(".btn-left").click(function(){
+						jQuery("#img-inner").stop(true,true);
+						animater();
+					});
+					function animatel(){
+						var l;
+						if(jQuery("#img-inner").position().left==0){
+							jQuery("#img-inner").css("left",-270*6+"px");
+							l = jQuery("#img-inner").position().left + 270;
+						}else{
+							l = jQuery("#img-inner").position().left + 270;
+						}
+						jQuery("#img-inner").animate({left:l+"px"});
+					}
+					function animater(){
+						var l;
+						if(jQuery("#img-inner").position().left==-270*6){
+							jQuery("#img-inner").css("left",0);
+							l = jQuery("#img-inner").position().left - 270;
+						}else{
+							l = jQuery("#img-inner").position().left - 270;
+						}
+
+						jQuery("#img-inner").animate({left:l+"px"});
+					}
+				});
+			</script>';
+    $output .= '<div class="img-container">';
+    $output .= '<div id="img-inner">';
 
 
-    $i = 1;
+    $count_times = 0;
     if(!key_exists($image_style,image_styles())){
         $image_style = key(image_styles());
     }
+    //两次才能循环播放
+    $i = 1;
+//    while($count_times<12) {
+        foreach ($items as $item) {
+            $output .= '<div class="imgblock img' . $i . '">';
+            $output .= '<a href="' . '/node/' . $item->nid . '"><img src="' . image_style_url($image_style, $item->uri) . '"></a>';
+            $output .= '</div>';
 
-    foreach ($items as $item) {
-        $output .= '<div class="img'.$i.'">';
-        $output .=  '<a href="'.'/node/'.$item->nid.'"><img src="'.image_style_url($image_style,$item->uri).'"></a>';
-        $output .='</div>';
-        $i++;
-    }
+            $i++;
+            $count_times++;
+            $i = $i>6?1:$i;
+        }
+//    }
 
-    $output.='</div>';
+    $output .='</div>'; //id img-inner
+
+    $output .= '<div class="btn-left"><img src="/'.drupal_get_path('theme','khtheme').'/img/left.png" /></div>
+				<div class="btn-right"><img src="/'.drupal_get_path('theme','khtheme').'/img/right.png" /></div>';
+    $output .='</div>'; //class img-container
     return $output;
 
 }
