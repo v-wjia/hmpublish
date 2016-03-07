@@ -326,8 +326,8 @@ function tchart_block_view($delta = '')
                     tchart_get_block_content($tid, $depth);
                 }
                 if ($delta == 'side_navigation') {
-                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active']);
-                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active']);
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active'],'海绵城市考核指标');
+                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active'],'考核区域');
                 } else {
                     $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_nav_button', 'tid');
                 }
@@ -464,13 +464,45 @@ function theme_tchart_side_nav($variables)
     // Only output the list container and title, if there are any list items.
     // Check to see whether the block title exists before adding a header.
     // Empty headers are not semantic and present accessibility challenges.
-    $output = '<div class="side-nav">';
-    if (isset($title) && $title !== '') {
-        $output .= '<h3>' . $title . '</h3>';
-    }
-    $output .= tchart_get_rendered_nav($type, $attributes, 'tid', $active, $items);
+    $level = 1;
+    $output = '<ul>';
 
-    $output .= '</div>';
+    if (isset($title) && $title !== '') {
+        $output .= '<li class="level-'.$level.'">'.$title.'<div class="array"></div></li>';
+    }
+
+    $level ++;
+    $output .= tchart_get_rendered_side_nav( $attributes, 'tid', $active, $items,$level);
+
+    $output .= '</ul>';
+    return $output;
+}
+
+/**
+ * 左侧递归输出li菜单
+ */
+function tchart_get_rendered_side_nav($attributes, $active_id, $active, $items, $level)
+{
+    $output = '';
+    if (!empty($items)) {
+
+        foreach ($items as $item) {
+            $act_attributes = array();
+            $data = $item['data'];
+
+            //如果是本term或者父term则添加类active
+            $act_attributes['class'][]='level-'.$level;
+            if (in_array($item[$active_id], $active)) {
+                $act_attributes['class'][] = 'active';
+            }
+            $act_attributes += $attributes;
+            $output .= '<li ' . drupal_attributes($act_attributes) . '>' . l($data['title'], $data['link']) . "</li>\n";
+            //存在子目录则继续渲染
+            if (key_exists('children', $item)) {
+                $output .= tchart_get_rendered_side_nav( $attributes, $active_id, $active, $item['children'],$level+1);
+            }
+        }
+    }
     return $output;
 }
 

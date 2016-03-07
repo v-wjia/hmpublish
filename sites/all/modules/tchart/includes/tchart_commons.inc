@@ -146,13 +146,13 @@ function _get_children($term,$active)
     return $data_array;
 }
 
-function tchart_render_navigation($items, $active, $theme = 'tchart_side_nav', $active_id = 'vid')
+function tchart_render_navigation($items, $active, $title,$theme = 'tchart_side_nav', $active_id = 'vid')
 {
     //渲染
     if (empty($items)) {
         $output = '';
     } else {
-        $output = theme($theme, array('items' => $items, 'active' => $active, 'active_id' => $active_id));
+        $output = theme($theme, array('items' => $items, 'active' => $active, 'active_id' => $active_id,'title'=>$title));
     }
     return $output;
 }
