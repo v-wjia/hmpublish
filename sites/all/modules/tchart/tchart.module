@@ -299,6 +299,12 @@ function tchart_block_info()
         'cache' => DRUPAL_CACHE_PER_ROLE
         //default
     );
+    $blocks['login_bar'] = array(
+        'info' => t('Login bar'),
+        //The name that will appear in the block list.
+        'cache' => DRUPAL_CACHE_PER_ROLE
+        //default
+    );
     return $blocks;
 }
 
@@ -383,6 +389,18 @@ function tchart_block_view($delta = '')
 
                 return $block;
             }
+            break;
+        case 'login_bar' :  //登录bar,editor系统跳转
+            $block=array();
+            if (user_is_logged_in()) {
+                //如果登录了
+                $block['content'] = '<span>' . l(t('My account'), drupal_get_path_alias('user')) . '</span>&nbsp;&nbsp;<span>' . l(t('Log out'), drupal_get_path_alias('user/logout')) . '</span>' ;
+            } else {
+                //如果未登录
+                $block['content'] = '<span>' . l(t('User login'), drupal_get_path_alias('user/login')) . '</span>&nbsp;&nbsp;<span>' . l(t('Create new account'), drupal_get_path_alias('user/register')) . '</span>';
+            }
+
+            return $block;
             break;
     }
 
