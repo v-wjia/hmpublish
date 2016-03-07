@@ -12,13 +12,14 @@ define("ECHARTS_DEFAULT_CHART", "line");
  * Implements hook_init().
  */
 function echarts_init() {
-  drupal_add_js(drupal_get_path('module', 'echarts') . '/lib/echarts.js');
+
 }
 
 /**
  * Render the chart.
  */
 function render_echarts($settings) {
+  drupal_add_js(drupal_get_path('module', 'echarts') . '/lib/echarts.js');
   drupal_alter('render_echarts', $settings);
   $ret = '';
   $settings['echarts_types'] = array('echarts');

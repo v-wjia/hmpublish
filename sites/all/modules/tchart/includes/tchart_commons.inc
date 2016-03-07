@@ -175,3 +175,50 @@ function get_page_term()
     }
     return array('vid' => -1, 'tid' => -2);
 }
+
+/**
+ * 获取taxonomy有图片的node
+ */
+function tchart_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $order = array('t.sticky' => 'DESC', 't.created' => 'DESC')) {
+    if (!variable_get('taxonomy_maintain_index_table', TRUE)) {
+        return array();
+    }
+    $query = db_select('taxonomy_index', 't');
+    $query->addTag('node_access');
+    $query->condition('tid', $tid);
+
+    $query->join('field_data_field_image', 'no', 'no.entity_id = t.nid');
+    $query->condition('entity_type', 'node');
+
+    $query->join('file_managed','fm','fm.fid=no.field_image_fid');
+    $query->addField('fm','uri');
+
+
+    if ($pager) {
+        $count_query = clone $query;
+        $count_query->addExpression('COUNT(t.nid)');
+
+        $query = $query->extend('PagerDefault');
+        if ($limit !== FALSE) {
+            $query = $query->limit($limit);
+        }
+        $query->setCountQuery($count_query);
+    }
+    else {
+        if ($limit !== FALSE) {
+            $query->range(0, $limit);
+        }
+    }
+    $query->addField('t', 'nid');
+    $query->addField('t', 'tid');
+    foreach ($order as $field => $direction) {
+        $query->orderBy($field, $direction);
+        // ORDER BY fields need to be loaded too, assume they are in the form
+        // table_alias.name
+        list($table_alias, $name) = explode('.', $field);
+        $query->addField($table_alias, $name);
+    }
+
+
+    return $query->execute();
+}

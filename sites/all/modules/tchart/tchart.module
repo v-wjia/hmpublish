@@ -129,6 +129,12 @@ function tchart_term_form()
                     '#default_value' => variable_get('tchart_show_depth_' . $term->tid, FALSE),
                     '#required' => FALSE,
                 );
+                $form['tchart_term_show_photo_' . $term->tid] = array(
+                    '#type' => 'checkbox',
+                    '#title' => t('只显示图片'),
+                    '#default_value' => variable_get('tchart_term_show_photo_' . $term->tid, FALSE),
+                    '#required' => FALSE,
+                );
                 $form['tchart_term_db_' . $term->tid] = array(
                     '#type' => 'textfield',
                     '#title' => t('数据库表'),
@@ -213,6 +219,21 @@ function taxonomy_show($term)
             '#suffix' => '</p>',
         );
     }
+
+    //只显示图片的行为
+    if(variable_get('tchart_term_show_photo_'.(string)$term->tid, FALSE)){
+
+        $photo_nodes=array();
+        foreach (tchart_taxonomy_select_nodes($term->tid) as $node) {
+            $photo_nodes[]=$node;
+
+        };
+        array_unshift($build,array(
+            '#theme'=>'tchart_photo_wall',
+            '#items'=>$photo_nodes,
+        ));
+        return $build;
+    }
     //显示其余文章
     if ($nids = taxonomy_select_nodes($term->tid, TRUE, variable_get('default_nodes_main', 10))) {
         $nodes = node_load_multiple($nids);
@@ -224,7 +245,7 @@ function taxonomy_show($term)
     } else {
         $build['no_content'] = array(
             '#prefix' => '<p>',
-            '#markup' => t('There is currently no content classified with this term.'),
+            '#markup' => t(' '),
             '#suffix' => '</p>',
         );
     }
@@ -456,6 +477,13 @@ function tchart_theme($existing, $type, $theme, $path)
                 'active_id' => 'vid',
                 'active' => array(),
                 'type' => 'ul',
+                'attributes' => array(),
+            ),
+        ),
+        'tchart_photo_wall' => array(
+            'variables' => array(
+                'items' => NULL,
+                'image_style'=>'photo_wall',
                 'attributes' => array(),
             ),
         ),
@@ -735,7 +763,7 @@ function theme_tchart_time_chart($variables)
     $series_out .= ']';
 
     //加载js
-    drupal_add_js(drupal_get_path('module', 'echarts') . '/lib/echarts.js');
+//    drupal_add_js(drupal_get_path('module', 'echarts') . '/lib/echarts.js');
     drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
     $output .=
 //	'<div id="main" style="width: 600px;height:400px;"></div>
@@ -811,6 +839,35 @@ function theme_tchart_time_chart($variables)
     return $output;
 }
 
+/**
+ * 照片墙样式
+ */
+function theme_tchart_photo_wall($variables)
+{
+    $items = $variables['items'];
+    $image_style=$variables['image_style'];
+    if(empty($items)){
+        return '';
+    }
+    $output = '<div class="img-container">';
+
+
+    $i = 1;
+    if(!key_exists($image_style,image_styles())){
+        $image_style = key(image_styles());
+    }
+
+    foreach ($items as $item) {
+        $output .= '<div class="img'.$i.'">';
+        $output .=  '<a href="'.'/node/'.$item->nid.'"><img src="'.image_style_url($image_style,$item->uri).'"></a>';
+        $output .='</div>';
+        $i++;
+    }
+
+    $output.='</div>';
+    return $output;
+
+}
 function tchart_page_build()
 {
     drupal_add_css(drupal_get_path('module', 'tchart') . '/css/tchart.css', array(

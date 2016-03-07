@@ -27,6 +27,11 @@ body{
 	line-height:50px;
 	color: #fff;
 }
+/*add*/
+.header .login span a{
+	color: #fff;
+}
+/*add end*/
 .main{
 	width: 1000px;
 	margin: 0 auto;
