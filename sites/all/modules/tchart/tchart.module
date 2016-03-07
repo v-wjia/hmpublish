@@ -594,11 +594,10 @@ function theme_tchart_report($variables)
 				}
 			</style>';
 
+    //渲染时间
     $output .= '<div class="data-table">
 				<table widh="100%" align="center" CELLSPACING="0" CELLPADDING="0">';
 
-
-    //渲染时间
     $output .= '<tr>';
     foreach ($date as $date_link) {
         $output .= "<td class='$date_link[1]'>" . $date_link[0] . '</td>';
@@ -606,8 +605,11 @@ function theme_tchart_report($variables)
     $output .= '</table>';
     $output .= '</div>';
 
-    $output .= '<table>';
     //渲染表头
+
+    $output .= '<div class="data-table">
+				<table widh="100%" align="center" CELLSPACING="0" CELLPADDING="0">';
+
     $output .= '<tr>';
     foreach ($header as $one_head) {
         $output .= '<td>' . $one_head . '</td>';
@@ -623,6 +625,8 @@ function theme_tchart_report($variables)
     }
     $output .= '</table>';
     $output .= '</div>';
+
+    $output .= '</div>';    //class "data-table"
     return $output;
 
 }
