@@ -13,7 +13,7 @@ function get_charts($term)
 {
 
     $category = variable_get('tchart_term_db_' . $term->tid, 'rainwater_utilization');
-
+    waterenviroment_quality(array(78, 79, 80));
 //	print_r(_get_children_tids($term->tid));
 
     taxonomy_get_children($term->tid);
@@ -396,7 +396,7 @@ function groundwaterlevel_chart($data, $containerId = -1)
             if ($entry->location == $cat) {
                 array_push($chart_set[$cat]['data'], array(
                     strtotime($entry->samplingtime),
-                    $entry->groundwaterlevel
+                    $entry->groundwaterdepth
                 ));
                 break;
             }
@@ -527,6 +527,7 @@ function ecologicalbankline_data($tid)
 function groundwater_quality($tid, $date = '')
 {
     $output = '';
+    //取出第一个日期
     if ($date == '') {
         $date_query = db_select('groundwater_quality', 'n')
             ->fields('n')
@@ -541,7 +542,9 @@ function groundwater_quality($tid, $date = '')
     } else {
         $date = strtotime($date);
     }
-
+    if(empty($date)){
+        $date = time();
+    }
     $header = array('监测点', '测定指标', '测定值', '参考值', '是否达标');
     $items = array();
     $date_table = array();
@@ -594,6 +597,7 @@ function groundwater_quality($tid, $date = '')
     $query_date = db_select('groundwater_quality', 'n')
         ->distinct()
         ->fields('n', array('samplingtime'))
+        ->condition('t_id',$tid)
         ->orderBy('samplingtime', 'ASC')
         ->execute();
     foreach ($query_date as $has_date) {
@@ -627,6 +631,68 @@ function build_grounderwater_array($equipment, $field, $value, $reference, $resu
     return array($equipment, $field, $value, $reference, $result);
 }
 
+/**
+ * 水环境质量—地表水
+ */
+function waterenviroment_quality($tid)
+{
+    $output = '';
+    $data_settings = array();
+    $date_query = db_select('waterenviroment_quality', 'n')
+        ->fields('n')
+        ->condition('t_id', $tid)
+        ->orderBy('category', 'ASE')
+        ->orderBy('samplingtime', 'ASE')
+        ->execute();
+
+    $category = array(
+        0 => array(
+            'samplingtime' => '时间',
+            'COD' => '化学需氧量',
+            'NH3_N' => '氨氮',
+            'CODMn' => '高锰酸盐指数',
+            'TP' => '总磷',
+            'TN' => '总氮',
+            'DO' => '溶解氧',
+            'SS' => '悬浮物',
+        ),
+        1 => array(),
+
+    );
+//temperature
+//COD
+//CODMn
+//DO
+//SS
+//TON
+//NH3_N
+//TN
+//TP
+//PH
+//clarity
+//colority
+//category
+
+    foreach ($date_query as $item) {
+        $entry = (array)$item;
+        unset($entry['t_id']);
+        unset($entry['id']);
+        unset($entry['uploadid']);
+        $i = 1;
+        foreach ($category as $category_1) {
+            foreach ($category_1 as $key => $value) {
+                $data_settings[$item->category . '参数' . $i]['#items'][$key][] = $entry[$key];
+            }
+            $i++;
+        }
+
+    }
+//    print_r($data_settings);
+    return;
+
+
+}
+
 
 function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
 {
@@ -639,7 +705,7 @@ function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
             'tooltip' => array('trigger' => 'axis'),
             'legend' => array(
                 'data' => $legend,
-                'x'=>'left',
+                'x' => 'left',
             ),
             'toolbox' => array(
                 'show' => TRUE,
@@ -829,7 +895,7 @@ function _get_children_tids($tid)
     if (variable_get('tchart_show_depth_' . $tid, FALSE)) {
         $terms = taxonomy_get_children($tid);
         foreach ($terms as $term) {
-            $tids=array_merge($tids,_get_children_tids($term->tid));
+            $tids = array_merge($tids, _get_children_tids($term->tid));
         }
     }
     return $tids;
