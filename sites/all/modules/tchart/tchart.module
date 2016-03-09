@@ -215,22 +215,23 @@ function taxonomy_show($term)
         $charts = get_charts($term);
         $build['content'] = array(
             '#prefix' => '<p>',
-            '#markup' => $charts,
+            '#markup' => $charts['output'],
             '#suffix' => '</p>',
         );
+        $build['conftent'] = $charts['settings'];
     }
 
     //只显示图片的行为
-    if(variable_get('tchart_term_show_photo_'.(string)$term->tid, FALSE)){
+    if (variable_get('tchart_term_show_photo_' . (string)$term->tid, FALSE)) {
 
-        $photo_nodes=array();
+        $photo_nodes = array();
         foreach (tchart_taxonomy_select_nodes($term->tid) as $node) {
-            $photo_nodes[]=$node;
+            $photo_nodes[] = $node;
 
         };
-        array_unshift($build,array(
-            '#theme'=>'tchart_photo_wall',
-            '#items'=>$photo_nodes,
+        array_unshift($build, array(
+            '#theme' => 'tchart_photo_wall',
+            '#items' => $photo_nodes,
         ));
         return $build;
     }
@@ -353,10 +354,10 @@ function tchart_block_view($delta = '')
                     tchart_get_block_content($tid, $depth);
                 }
                 if ($delta == 'side_navigation') {
-                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active'],'海绵城市考核指标');
-                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active'],'考核区域');
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active'], '海绵城市考核指标');
+                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active'], '考核区域');
                 } else {
-                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], 'tchart_nav_button', 'tid');
+                    $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], '', 'tchart_nav_button', 'tid');
                 }
 
                 return $block;
@@ -412,10 +413,10 @@ function tchart_block_view($delta = '')
             }
             break;
         case 'login_bar' :  //登录bar,editor系统跳转
-            $block=array();
+            $block = array();
             if (user_is_logged_in()) {
                 //如果登录了
-                $block['content'] = '<span>' . l(t('My account'), drupal_get_path_alias('user')) . '</span>&nbsp;&nbsp;<span>' . l(t('Log out'), drupal_get_path_alias('user/logout')) . '</span>' ;
+                $block['content'] = '<span>' . l(t('My account'), drupal_get_path_alias('user')) . '</span>&nbsp;&nbsp;<span>' . l(t('Log out'), drupal_get_path_alias('user/logout')) . '</span>';
             } else {
                 //如果未登录
                 $block['content'] = '<span>' . l(t('User login'), drupal_get_path_alias('user/login')) . '</span>&nbsp;&nbsp;<span>' . l(t('Create new account'), drupal_get_path_alias('user/register')) . '</span>';
@@ -470,6 +471,15 @@ function tchart_theme($existing, $type, $theme, $path)
                 'attributes' => array(),
             ),
         ),
+        'tchart_time_chart2' => array(
+            'variables' => array(
+                'items' => NULL,
+                'title' => NULL,
+                'category' => NULL,
+                'date' => NULL,
+                'attributes' => array(),
+            ),
+        ),
         'tchart_nav_button' => array(
             'variables' => array(
                 'items' => NULL,
@@ -483,7 +493,7 @@ function tchart_theme($existing, $type, $theme, $path)
         'tchart_photo_wall' => array(
             'variables' => array(
                 'items' => NULL,
-                'image_style'=>'photo_wall',
+                'image_style' => 'photo_wall',
                 'attributes' => array(),
             ),
         ),
@@ -514,11 +524,11 @@ function theme_tchart_side_nav($variables)
     $output = '<ul>';
 
     if (isset($title) && $title !== '') {
-        $output .= '<li class="level-'.$level.'">'.$title.'<div class="array"></div></li>';
+        $output .= '<li class="level-' . $level . '">' . $title . '<div class="array"></div></li>';
     }
 
-    $level ++;
-    $output .= tchart_get_rendered_side_nav( $attributes, 'tid', $active, $items,$level);
+    $level++;
+    $output .= tchart_get_rendered_side_nav($attributes, 'tid', $active, $items, $level);
 
     $output .= '</ul>';
     return $output;
@@ -537,7 +547,7 @@ function tchart_get_rendered_side_nav($attributes, $active_id, $active, $items, 
             $data = $item['data'];
 
             //如果是本term或者父term则添加类active
-            $act_attributes['class'][]='level-'.$level;
+            $act_attributes['class'][] = 'level-' . $level;
             if (in_array($item[$active_id], $active)) {
                 $act_attributes['class'][] = 'active';
             }
@@ -545,7 +555,7 @@ function tchart_get_rendered_side_nav($attributes, $active_id, $active, $items, 
             $output .= '<li ' . drupal_attributes($act_attributes) . '>' . l($data['title'], $data['link']) . "</li>\n";
             //存在子目录则继续渲染
             if (key_exists('children', $item)) {
-                $output .= tchart_get_rendered_side_nav( $attributes, $active_id, $active, $item['children'],$level+1);
+                $output .= tchart_get_rendered_side_nav($attributes, $active_id, $active, $item['children'], $level + 1);
             }
         }
     }
@@ -787,8 +797,6 @@ function theme_tchart_time_chart($variables)
                    + date.getDate() + \' \'
                    + date.getHours() + \':\'
                    + date.getMinutes();
-//            return "aaa"+params.seriesName +\'<br/>\'+ data + \'<br/>\'+
-//                   + params.value[1] + \'' . $unit['per'] . '\';
 
 			output = data + \'<br/>\';
 			for(var i=0;i<params.length;i++){
@@ -835,7 +843,148 @@ function theme_tchart_time_chart($variables)
         // 使用刚指定的配置项和数据显示图表。
         myChart.setOption(option);
     </script>';
-//  print_r($output);
+    return $output;
+}
+
+/**
+ * 时间轴图标样式2
+ */
+function theme_tchart_time_chart2($variables)
+{
+    global $tchart_div_id;
+    static $tchart_div_id = 0;
+    $items = $variables['items'];
+    $category = $variables['category'];
+    $title = isset($variables['title']) ? $variables['title'] : " ";
+
+
+    if (array_key_exists('div_id', $variables) && !empty($variables['div_id'])) {
+        $div_id = 'chart_' . $variables['div_id'];
+    } else {
+        $div_id = 'auto_chart_' . $tchart_div_id;
+        $tchart_div_id++;
+    }
+
+    $output = '';
+
+    //timespan
+    if (!isset($variables['timespan'])) {
+        $timespan = $items['samplingtime'];
+        foreach ($timespan as $key => $value) {
+            $timespan[$key] = strtotime($value);
+        }
+        unset($items['sapmlingtime']);
+        unset($category['samplingtime']);
+    } else {
+        $timespan = $variables['timespan'];
+    }
+
+    $xAxis_category = '[';
+    foreach ($timespan as $_timespan) {
+        $xAxis_category .= "'" . date('Y/m/d', $_timespan) . "',";
+    }
+    $xAxis_category .= ']';
+
+    //legend
+    $legend_out = '[';
+    foreach ($category as $one_legend) {
+        $legend_out .= "'" . $one_legend[0] . "',";
+    }
+    $legend_out .= ']';
+
+    //具体数据
+    $series_out = '[';
+    foreach ($items as $key => $item) {
+        if ($key == 'samplingtime') {
+            continue;
+        }
+
+        $data_out = '';
+        $count_cate = 0;
+        foreach ($item as $item_key => $one_data) {
+            $data_out .= '[' . $count_cate . ',' . $one_data . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : "") . '\'],';
+            $count_cate++;
+        }
+        $series_out .= '{
+            name: \'' . $category[$key][0] . '\',
+            type: \'' . (isset($category[$key][2]) ? isset($category[$key][2]) : 'bar') . '\',
+            data: [' . $data_out . ']
+        },';
+    }
+    $series_out .= ']';
+
+
+    $formatter = 'function (params) {
+            var date = new Date(params[0].value[0]);
+            data = date.getFullYear() + \'-\'
+                   + (date.getMonth() + 1) + \'-\'
+                   + date.getDate() + \' \'
+                   + date.getHours() + \':\'
+                   + date.getMinutes();
+
+			output = params[0].name + \'<br/>\';
+			for(var i=0;i<params.length;i++){
+	 			output += params[i].seriesName + " : " + params[i].value[1] + params[i].value[2] +\'<br/>\';
+	 		}
+			return output;
+        }';
+
+    //加载js
+    drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
+    $output .=
+        '<div id="' . $div_id . '" style="width: 700px;height:400px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById(\'' . $div_id . '\'));
+
+        // 指定图表的配置项和数据
+        var option = {
+    title : {
+        text : \'' . $title . '\',
+//        subtext : \'dataZoom支持\'
+    },
+    tooltip : {
+        trigger: \'axis\',
+        formatter : ' . $formatter . '
+    },
+    toolbox: {
+        show : true,
+        feature : {
+            mark : {show: true},
+            dataView : {show: true, readOnly: false},
+            restore : {show: true},
+            saveAsImage : {show: true}
+        }
+    },
+    dataZoom: {
+        show: true,
+        start : 0
+    },
+    legend : {
+        data : ' . $legend_out . '
+    },
+    xAxis : [
+        {
+            type : \'category\',
+            data : ' . $xAxis_category . '
+        }
+    ],
+    yAxis : [
+        {
+            type : \'value\' ,
+            name : \'' . '  ' . '\' ,
+            axisLabel: {
+            	formatter : \'{value}' . '  ' . '\'
+            }
+        }
+    ],
+    series : ' . $series_out . '
+};
+
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>';
     return $output;
 }
 
@@ -845,8 +994,8 @@ function theme_tchart_time_chart($variables)
 function theme_tchart_photo_wall($variables)
 {
     $items = $variables['items'];
-    $image_style=$variables['image_style'];
-    if(empty($items)){
+    $image_style = $variables['image_style'];
+    if (empty($items)) {
         return '';
     }
     $output = '<style></style>
@@ -872,8 +1021,7 @@ function theme_tchart_photo_wall($variables)
 						  return;
 						}
 						if(jQuery("#img-inner").position().left==0){
-							jQuery("#img-inner").css("left",-270*len+"px");
-//							l = jQuery("#img-inner").position().left + 270;
+                            l = -270*len;
 						}else{
 							l = jQuery("#img-inner").position().left + 270;
 						}
@@ -885,8 +1033,7 @@ function theme_tchart_photo_wall($variables)
 						  return;
 						}
 						if(jQuery("#img-inner").position().left==-270*len){
-							jQuery("#img-inner").css("left",0);
-//							l = jQuery("#img-inner").position().left - 270;
+						    l = 0;
 						}else{
 							l = jQuery("#img-inner").position().left - 270;
 						}
@@ -900,29 +1047,30 @@ function theme_tchart_photo_wall($variables)
 
 
     $count_times = 0;
-    if(!key_exists($image_style,image_styles())){
+    if (!key_exists($image_style, image_styles())) {
         $image_style = key(image_styles());
     }
 
     $i = 1;
-        foreach ($items as $item) {
-            $output .= '<div class="imgblock img' . $i . '">';
-            $output .= '<a href="' . '/node/' . $item->nid . '"><img src="' . image_style_url($image_style, $item->uri) . '"></a>';
-            $output .= '</div>';
+    foreach ($items as $item) {
+        $output .= '<div class="imgblock img' . $i . '">';
+        $output .= '<a href="' . '/node/' . $item->nid . '"><img src="' . image_style_url($image_style, $item->uri) . '"></a>';
+        $output .= '</div>';
 
-            $i++;
-            $count_times++;
-            $i = $i>6?1:$i;
-        }
+        $i++;
+        $count_times++;
+        $i = $i > 6 ? 1 : $i;
+    }
 
-    $output .='</div>'; //id img-inner
+    $output .= '</div>'; //id img-inner
 
-    $output .= '<div class="btn-left"><img src="/'.drupal_get_path('theme','khtheme').'/img/left.png" /></div>
-				<div class="btn-right"><img src="/'.drupal_get_path('theme','khtheme').'/img/right.png" /></div>';
-    $output .='</div>'; //class img-container
+    $output .= '<div class="btn-left"><img src="/' . drupal_get_path('theme', 'khtheme') . '/img/left.png" /></div>
+				<div class="btn-right"><img src="/' . drupal_get_path('theme', 'khtheme') . '/img/right.png" /></div>';
+    $output .= '</div>'; //class img-container
     return $output;
 
 }
+
 function tchart_page_build()
 {
     drupal_add_css(drupal_get_path('module', 'tchart') . '/css/tchart.css', array(

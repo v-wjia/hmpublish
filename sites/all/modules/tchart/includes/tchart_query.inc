@@ -13,11 +13,12 @@ function get_charts($term)
 {
 
     $category = variable_get('tchart_term_db_' . $term->tid, 'rainwater_utilization');
-    waterenviroment_quality(array(78, 79, 80));
+
 //	print_r(_get_children_tids($term->tid));
 
     taxonomy_get_children($term->tid);
     $settings = array();
+    $drupal_settings = array();
     $tid = $term->tid;
     $output = '';
     switch ($category) {
@@ -27,8 +28,9 @@ function get_charts($term)
         case 'pipe_leakage_rate':
             $settings += pipe_leakage_rate($tid);
             break;
-//        case 'waterenviroment_quality':
-//            break;
+        case 'waterenviroment_quality':
+            $drupal_settings += waterenviroment_quality($tid);
+            break;
         case 'wastewater_reuse_rate':
             $settings += wastewater_reuse_rate($tid);
             break;
@@ -48,7 +50,7 @@ function get_charts($term)
     if (!empty($settings)) {
         $output = render_echarts(array('echart' => $settings)) . $output;
     }
-    return $output;
+    return array('output' => $output, 'settings' => $drupal_settings);
 }
 
 /**
@@ -542,7 +544,7 @@ function groundwater_quality($tid, $date = '')
     } else {
         $date = strtotime($date);
     }
-    if(empty($date)){
+    if (empty($date)) {
         $date = time();
     }
     $header = array('监测点', '测定指标', '测定值', '参考值', '是否达标');
@@ -597,7 +599,7 @@ function groundwater_quality($tid, $date = '')
     $query_date = db_select('groundwater_quality', 'n')
         ->distinct()
         ->fields('n', array('samplingtime'))
-        ->condition('t_id',$tid)
+        ->condition('t_id', $tid)
         ->orderBy('samplingtime', 'ASC')
         ->execute();
     foreach ($query_date as $has_date) {
@@ -636,7 +638,6 @@ function build_grounderwater_array($equipment, $field, $value, $reference, $resu
  */
 function waterenviroment_quality($tid)
 {
-    $output = '';
     $data_settings = array();
     $date_query = db_select('waterenviroment_quality', 'n')
         ->fields('n')
@@ -645,34 +646,31 @@ function waterenviroment_quality($tid)
         ->orderBy('samplingtime', 'ASE')
         ->execute();
 
+    //两类参数
+    //可重构:后台设置
     $category = array(
         0 => array(
-            'samplingtime' => '时间',
-            'COD' => '化学需氧量',
-            'NH3_N' => '氨氮',
-            'CODMn' => '高锰酸盐指数',
-            'TP' => '总磷',
-            'TN' => '总氮',
-            'DO' => '溶解氧',
-            'SS' => '悬浮物',
+            'samplingtime' => array('时间'),
+            'COD' => array('化学需氧量', 'mg/L'),
+            'NH3_N' => array('氨氮', 'mg/L'),
+            'CODMn' => array('高锰酸盐指数', 'mg/L'),
+            'TP' => array('总磷', 'mg/L'),
+            'TN' => array('总氮', 'mg/L'),
+            'DO' => array('溶解氧', 'mg/L'),
+            'SS' => array('悬浮物', 'mg/L'),
         ),
-        1 => array(),
+        1 => array(
+            'samplingtime' => array('时间'),
+            'temperature' => array('温度', '℃'),
+            'clarity' => array('透明度', 'cm'),
+            'PH' => array('PH', ''),
+            'colority' => array('色度', '度'),
+            'TON' => array('臭阈值', ''),
+        ),
 
     );
-//temperature
-//COD
-//CODMn
-//DO
-//SS
-//TON
-//NH3_N
-//TN
-//TP
-//PH
-//clarity
-//colority
-//category
 
+    //数据源分类
     foreach ($date_query as $item) {
         $entry = (array)$item;
         unset($entry['t_id']);
@@ -680,15 +678,21 @@ function waterenviroment_quality($tid)
         unset($entry['uploadid']);
         $i = 1;
         foreach ($category as $category_1) {
+            //添加theme和title
+            $chart_name = $item->category . '参数' . $i;
+            $data_settings[$chart_name]['#theme'] = 'tchart_time_chart2';
+            $data_settings[$chart_name]['#title'] = $chart_name;
+            $data_settings[$chart_name]['#category'] = $category_1;
+            //添加item
             foreach ($category_1 as $key => $value) {
-                $data_settings[$item->category . '参数' . $i]['#items'][$key][] = $entry[$key];
+                $data_settings[$chart_name]['#items'][$key][] = $entry[$key];
             }
             $i++;
         }
-
     }
-//    print_r($data_settings);
-    return;
+
+//    drupal_render($data_settings);
+    return $data_settings;
 
 
 }
