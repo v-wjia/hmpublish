@@ -404,7 +404,7 @@ function tchart_block_view($delta = '')
                     $output .= theme('tchart_top_nav', array(
                             'items' => $items,
                             'active' => $active
-                        )) . '<br>';
+                        ));
                     $block['content'] = $output;
                 }
 
@@ -902,7 +902,7 @@ function theme_tchart_time_chart2($variables)
         $data_out = '';
         $count_cate = 0;
         foreach ($item as $item_key => $one_data) {
-            $data_out .= '[' . $count_cate . ',' . $one_data . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : "") . '\'],';
+            $data_out .= '[' . $count_cate . ',' . $one_data . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : " ") . '\'],';
             $count_cate++;
         }
         $series_out .= '{

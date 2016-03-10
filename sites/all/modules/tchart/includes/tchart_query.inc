@@ -663,9 +663,9 @@ function waterenviroment_quality($tid)
             'samplingtime' => array('时间'),
             'temperature' => array('温度', '℃'),
             'clarity' => array('透明度', 'cm'),
-            'PH' => array('PH', ''),
+            'PH' => array('PH'),
             'colority' => array('色度', '度'),
-            'TON' => array('臭阈值', ''),
+            'TON' => array('臭阈值'),
         ),
 
     );
