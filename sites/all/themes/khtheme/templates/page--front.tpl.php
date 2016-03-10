@@ -117,9 +117,11 @@
       </div>
 
     <?php if ($page['sidebar_first']): ?>
-      <div id="sidebar-first" class="column sidebar"><div class="section">
-          <?php print render($page['sidebar_first']); ?>
-        </div></div> <!-- /.section, /#sidebar-first -->
+      <div id="sidebar-first" class="column sidebar">
+          <div class="section">
+            <?php print render($page['sidebar_first']); ?>
+          </div>
+      </div> <!-- /.section, /#sidebar-first -->
     <?php endif; ?>
   </div>
 
@@ -128,7 +130,7 @@
   <?php if ($page['featured']): ?>
     <div id="featured">
         <?php print render($page['featured']); ?>
-</div> <!-- /.section, /#featured -->
+    </div> <!-- /.section, /#featured -->
   <?php endif; ?>
 
 

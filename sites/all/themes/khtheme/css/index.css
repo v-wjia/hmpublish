@@ -459,3 +459,11 @@ body{
 	font-size: 13px
 }
 /* list end*/
+
+#block-system-main-menu .content ul > li{
+    color: #8c9099;
+    text-indent: 1em;
+}
+#block-system-main-menu .content ul > li a.active{
+    color: #7c7c7c;
+}
