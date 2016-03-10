@@ -961,7 +961,8 @@ function theme_tchart_time_chart2($variables)
         start : 0
     },
     legend : {
-        data : ' . $legend_out . '
+        data : ' . $legend_out . ',
+        top : 20
     },
     xAxis : [
         {

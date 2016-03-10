@@ -182,3 +182,11 @@ function getWeek(){
       break;
   }
 }
+
+/**
+ * Implements hook_preprocess_page
+ */
+function khtheme_preprocess_page(&$variables){
+
+  $variables['site_path']='/'.drupal_get_path('theme','khtheme').'/';
+}

@@ -132,31 +132,105 @@
   <?php endif; ?>
 
 
-    <div id="content" class="column"><div class="section">
+<!--    <div id="content" class="column"><div class="section">-->
+<!---->
+<!--      <a id="main-content"></a>-->
+<!--      --><?php //print render($title_prefix); ?>
+<!--      --><?php //if ($title): ?>
+<!--        <h1 class="title" id="page-title">-->
+<!--          --><?php //print $title; ?>
+<!--        </h1>-->
+<!--      --><?php //endif; ?>
+<!--      --><?php //print render($title_suffix); ?>
+<!--      --><?php //if ($tabs): ?>
+<!--        <div class="tabs">-->
+<!--          --><?php //print render($tabs); ?>
+<!--        </div>-->
+<!--      --><?php //endif; ?>
+<!--      --><?php //print render($page['help']); ?>
+<!--      --><?php //if ($action_links): ?>
+<!--        <ul class="action-links">-->
+<!--          --><?php //print render($action_links); ?>
+<!--        </ul>-->
+<!--      --><?php //endif; ?>
+<!--      --><?php //print render($page['content']); ?>
+<!--      --><?php //print $feed_icons; ?>
+<!---->
+<!--    </div></div>-->
+  <script type="text/javascript">
+    jQuery(function(){
 
-      <a id="main-content"></a>
-      <?php print render($title_prefix); ?>
-      <?php if ($title): ?>
-        <h1 class="title" id="page-title">
-          <?php print $title; ?>
-        </h1>
-      <?php endif; ?>
-      <?php print render($title_suffix); ?>
-      <?php if ($tabs): ?>
-        <div class="tabs">
-          <?php print render($tabs); ?>
-        </div>
-      <?php endif; ?>
-      <?php print render($page['help']); ?>
-      <?php if ($action_links): ?>
-        <ul class="action-links">
-          <?php print render($action_links); ?>
-        </ul>
-      <?php endif; ?>
-      <?php print render($page['content']); ?>
-      <?php print $feed_icons; ?>
+    });
+  </script>
 
-    </div></div> <!-- /.section, /#content -->
+
+
+  <div class="sk-wrapper">
+    <div class="sk sk1">
+      <div class="sk-logo"><span>规划区域</span></div>
+      <p><span>区域面积</span>&nbsp;&nbsp;<span>160平方公里</span></p>
+      <p><span>区域数量</span>&nbsp;&nbsp;<span><em>6</em>个</span></p>
+    </div>
+    <div class="sk sk2">
+      <div class="sk-logo"><span>监测指标</span></div>
+      <p><span>定量指标</span>&nbsp;&nbsp;<span>11个</span></p>
+      <p><span>定性指标</span>&nbsp;&nbsp;<span>7个</span></p>
+      <p><span>在线监控</span>&nbsp;&nbsp;<span><em>5</em>个</span></p>
+    </div>
+    <div class="sk sk3">
+      <div class="sk-logo"><span>硬件设备</span></div>
+      <p><span>传感器数量</span>&nbsp;&nbsp;<span>11个</span></p>
+      <p><span>站点数量</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>7个</span></p>
+      <p><span>覆盖面积</span>&nbsp;&nbsp;&nbsp;&nbsp;<span><em>5</em>个</span></p>
+    </div>
+  </div>
+
+
+  <div class="zb-wrapper">
+    <div class="zb-left">
+      <h5>定量指标<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+      <ul>
+        <li>年径流总量控制率<div class="chart red"><div style="width:70px"></div></li>
+        <li>生态岸线恢复<div class="chart green"><div style="width:50px"></div></div></li>
+        <li>地下水位<div class="chart red"><div style="width:70px"></div></div></li>
+        <li>城市热岛效应<div class="chart green"><div style="width:50px"></div></div></li>
+        <li>水环境质量<div class="chart green"><div style="width:20px"></div></div></li>
+        <li>城市面源污染控制<div class="chart red"><div style="width:100px"></div></div></li>
+        <li>污水再生利用率<div class="chart green"><div style="width:30px"></div></div></li>
+        <li>雨水资源利用率<div class="chart red"><div style="width:20px"></div></div></li>
+        <li>管网漏损控制<div class="chart red"><div style="width:60px"></div></div></li>
+        <li>城市暴雨内涝灾害防治<div class="chart green"><div style="width:30px"></div></div></li>
+        <li>饮用水安全<div class="chart red"><div style="width:80px"></div></div></li>
+      </ul>
+    </div>
+    <div class="zb-right">
+      <h5>定性指标<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+      <ul>
+        <li>规划建设管控制度<img src="<?php echo $site_path; ?>img/dg.png"></li>
+        <li>蓝线、绿线划定与保护<img src="<?php echo $site_path; ?>img/dg.png"></li>
+        <li>技术规范与标准建设<img src="<?php echo $site_path; ?>img/dg.png"></li>
+        <li>投融次机制建设<img src="<?php echo $site_path; ?>img/dg.png"></li>
+        <li>绩效考核与奖励机制<img src="<?php echo $site_path; ?>img/dg.png"></li>
+        <li>产业化<img src="<?php echo $site_path; ?>img/dg.png"></li>
+        <li style="border-bottom:0">连片示范效应<img src="/<?php echo drupal_get_path('theme','khtheme');?>/img/dg.png"></li>
+      </ul>
+      <img src="<?php echo $site_path; ?>img/chart.jpg" alt="" style="display:block;margin:30px auto 43px;">
+    </div>
+  </div>
+
+  <div class="title-list">
+    <ul>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+      <li><a href="">西咸新区海绵城市建设</a></li>
+    </ul>
+  </div>
+  <!-- /.section, /#content -->
 
     <?php if ($page['sidebar_second']): ?>
       <div id="sidebar-second" class="column sidebar"><div class="section">

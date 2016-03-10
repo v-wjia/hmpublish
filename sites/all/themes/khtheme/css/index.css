@@ -245,3 +245,217 @@ body{
 	color: #686868;
 	font-size: 14px;
 }
+
+
+/* 水生态 start */
+.sk-wrapper{
+	width: 800px;
+	height: 80px;
+	margin: 30px auto;
+	color: #fff;
+}
+.sk-wrapper .sk{
+	width: 250px;
+	height: 80px;
+	position: relative;
+	float: left;
+}
+.sk-wrapper .sk1{
+	background: #f9c33c;
+	margin-right: 25px;
+}
+.sk-wrapper .sk2{
+	background: #f4496d;
+	margin-right: 25px;
+}
+.sk-wrapper .sk3{
+	background: #47c0df;
+}
+.sk-wrapper .sk > div{
+	position: absolute;
+	top:0;
+	right: 0;
+	width: 80px;
+	height: 80px;
+}
+.sk-wrapper .sk > div > span{
+	position: absolute;
+	top:46px;
+	width: 100%;
+	text-align: center;
+	font-size: 15px;
+
+}
+.sk-wrapper .sk span{
+	font-size: 12px;
+}
+.sk-wrapper .sk1 > div{
+	background: url(../img/sk1.jpg) no-repeat center 12px #ecb939;
+}
+.sk-wrapper .sk2 > div{
+	background: url(../img/sk2.jpg) no-repeat center 12px #e94568;
+}
+.sk-wrapper .sk3 > div{
+	background: url(../img/sk3.jpg) no-repeat center 12px #43b6d3;
+}
+.sk-wrapper .sk1 p{
+	line-height: 30px;
+	margin-left: 20px;
+	overflow: hidden;
+}
+.sk-wrapper .sk1 p:nth-child(2){
+	margin-top: 8px;
+}
+.sk-wrapper .sk em{
+	font-size: 22px;
+}
+.sk-wrapper .sk2 p,.sk-wrapper .sk3 p{
+	line-height: 20px;
+	margin-left: 20px;
+	overflow: hidden;
+}
+.sk-wrapper .sk2 p:nth-child(2),.sk-wrapper .sk3 p:nth-child(2){
+	margin-top: 4px;
+}
+.zb-wrapper{
+	width: 800px;
+	margin: 0 auto;
+	position: relative;
+	overflow: hidden;
+}
+
+.zb-wrapper .zb-left{
+	float: left;
+	width: 500px;
+	background: #fff;
+}
+.zb-wrapper .zb-right{
+	float: right;
+	width: 275px;
+	overflow: hidden;
+	background: #fff;
+}
+.zb-wrapper .zb-left h5{
+	line-height: 50px;
+	padding-left: 25px;
+	border-bottom: 1px solid #eee;
+	color: #585858;
+	font-weight: 600;
+	font-size: 14px;
+	position: relative;
+}
+.zb-wrapper .zb-left h5 img{
+	position: absolute;
+	top:17px;
+	right: 20px;
+}
+.zb-wrapper .zb-left ul li{
+	line-height: 50px;
+	padding-left: 25px;
+	border-bottom: 1px solid #eee;
+	color: #a8a8a8;
+	font-weight: 600;
+	font-size: 13px;
+	position: relative;
+}
+.zb-wrapper .zb-left ul li:hover{
+	background: #dffffd;
+	color: #3fbab5;
+}
+
+.zb-wrapper .zb-left ul li .chart{
+	height: 8px;
+	width: 220px;
+	position: absolute;
+	top: 21px;
+	left: 200px;
+	background: #b8fffb;
+}
+.zb-wrapper .zb-left ul li .chart.red:after{
+	content: "";
+	height: 8px;
+	width: 4px;
+	position: absolute;
+	left: 108px;
+	background: #d9012f;
+}
+.zb-wrapper .zb-left ul li .chart.red > div{
+	background: #e7708c;
+	position: absolute;
+	top:0;
+	right: 112px;
+	height: 8px;
+}
+.zb-wrapper .zb-left ul li .chart.green:after{
+	content: "";
+	height: 8px;
+	width: 4px;
+	position: absolute;
+	left: 108px;
+	background: #21a7c2;
+}
+.zb-wrapper .zb-left ul li .chart.green > div{
+	background: #5fcde4;
+	position: absolute;
+	top:0;
+	left: 112px;
+	height: 8px;
+}
+
+.zb-wrapper .zb-right h5{
+	line-height: 50px;
+	padding-left: 25px;
+	border-bottom: 1px solid #eee;
+	color: #585858;
+	font-weight: 600;
+	font-size: 14px;
+	position: relative;
+}
+.zb-wrapper .zb-right h5 img{
+	position: absolute;
+	top:17px;
+	right: 20px;
+}
+.zb-wrapper .zb-right ul li{
+	line-height: 50px;
+	padding-left: 25px;
+	border-bottom: 1px solid #eee;
+	color: #a8a8a8;
+	font-weight: 600;
+	font-size: 13px;
+	position: relative;
+}
+.zb-wrapper .zb-right ul li:hover{
+	background: #dffffd;
+	color: #3fbab5;
+}
+.zb-wrapper .zb-right ul li img{
+	position: absolute;
+	left: 220px;
+	top: 15px;
+}
+/* 水生态 end */
+
+/* list start*/
+.title-list{
+	width: 800px;
+	margin: 30px auto;
+	background: #fff;
+	color: #8e8e8e;
+}
+.title-list ul li{
+	line-height: 40px;
+	padding-left: 25px;
+	border-bottom:1px solid #eee;
+}
+.title-list ul li a{
+	text-decoration: none;
+	color: #8e8e8e;
+	font-size: 13px
+}
+.title-list ul li a:hover{
+	text-decoration: underline;
+	color: #505050;
+	font-size: 13px
+}
+/* list end*/
