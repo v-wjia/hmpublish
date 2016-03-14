@@ -220,7 +220,7 @@
     </div>
   </div>
 
-  <div class="title-list">
+<!--  <div class="title-list">
     <ul>
       <li><a href="">西咸新区海绵城市建设</a></li>
       <li><a href="">西咸新区海绵城市建设</a></li>
@@ -231,7 +231,7 @@
       <li><a href="">西咸新区海绵城市建设</a></li>
       <li><a href="">西咸新区海绵城市建设</a></li>
     </ul>
-  </div>
+  </div>-->
   <!-- /.section, /#content -->
 
     <?php if ($page['sidebar_second']): ?>
