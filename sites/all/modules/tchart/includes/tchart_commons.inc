@@ -166,7 +166,7 @@ function get_page_term()
     $term = menu_get_object('taxonomy_term', 2);
     if (!empty($node)) {
         //测试:field_name
-        $current_term = current(current($node->field_22222))['taxonomy_term'];
+        $current_term = current(current($node->field_attachcategory))['taxonomy_term'];
         return array('vid' => $current_term->vid, 'tid' => $current_term->tid);
     } elseif (!empty($term)) {
         return array('vid' => $term->vid, 'tid' => $term->tid);
