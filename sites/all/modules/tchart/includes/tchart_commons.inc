@@ -109,9 +109,9 @@ function tchart_get_block_content($tid, $depth)
         }
         $terms = taxonomy_get_tree($vid, $item->tid, 1);
         foreach ($terms as $term) {
-            if (variable_get('tchart_show_depth_' . $term->tid, FALSE)&&in_array($term->tid,$active)) {
-                $data_array=_get_children($term,$active);
-            }else {
+            if (variable_get('tchart_show_depth_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
+                $data_array = _get_children($term, $active);
+            } else {
                 $data_array = array(
                     //根据深度调节url
                     'data' => array('title' => $term->name, 'link' => get_term_depth_url($term->tid, $depth - $i)), //取出每一个发表的文章
@@ -126,7 +126,7 @@ function tchart_get_block_content($tid, $depth)
 
 }
 
-function _get_children($term,$active)
+function _get_children($term, $active)
 {
     $data_array = array(
         //根据深度调节url
@@ -134,25 +134,25 @@ function _get_children($term,$active)
         'tid' => $term->tid,
     );
     $children = array();
-    if (variable_get('tchart_show_depth_' . $term->tid, FALSE)&&in_array($term->tid,$active)) {
+    if (variable_get('tchart_show_depth_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
         $children_terms = taxonomy_get_children($term->tid);
         foreach ($children_terms as $children_term) {
-            $children[]= _get_children($children_term,$active);
+            $children[] = _get_children($children_term, $active);
         }
     }
-    if(!empty($children)){
-        $data_array['children']=$children;
+    if (!empty($children)) {
+        $data_array['children'] = $children;
     }
     return $data_array;
 }
 
-function tchart_render_navigation($items, $active, $title,$theme = 'tchart_side_nav', $active_id = 'vid')
+function tchart_render_navigation($items, $active, $title, $theme = 'tchart_side_nav', $active_id = 'vid')
 {
     //渲染
     if (empty($items)) {
         $output = '';
     } else {
-        $output = theme($theme, array('items' => $items, 'active' => $active, 'active_id' => $active_id,'title'=>$title));
+        $output = theme($theme, array('items' => $items, 'active' => $active, 'active_id' => $active_id, 'title' => $title));
     }
     return $output;
 }
@@ -179,7 +179,8 @@ function get_page_term()
 /**
  * 获取taxonomy有图片的node
  */
-function tchart_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $order = array('t.sticky' => 'DESC', 't.created' => 'DESC')) {
+function tchart_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $order = array('t.sticky' => 'DESC', 't.created' => 'DESC'))
+{
     if (!variable_get('taxonomy_maintain_index_table', TRUE)) {
         return array();
     }
@@ -190,8 +191,8 @@ function tchart_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $orde
     $query->join('field_data_field_image', 'no', 'no.entity_id = t.nid');
     $query->condition('entity_type', 'node');
 
-    $query->join('file_managed','fm','fm.fid=no.field_image_fid');
-    $query->addField('fm','uri');
+    $query->join('file_managed', 'fm', 'fm.fid=no.field_image_fid');
+    $query->addField('fm', 'uri');
 
 
     if ($pager) {
@@ -203,8 +204,7 @@ function tchart_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $orde
             $query = $query->limit($limit);
         }
         $query->setCountQuery($count_query);
-    }
-    else {
+    } else {
         if ($limit !== FALSE) {
             $query->range(0, $limit);
         }
@@ -221,4 +221,21 @@ function tchart_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $orde
 
 
     return $query->execute();
+}
+
+/**
+ * 根据报告获得下一级标题
+ */
+function _get_check($items, $active)
+{
+    $check = '考核区域';
+    foreach ($items as $item) {
+        if($item['data']['title'] == '报告'){
+            if(in_array($item['tid'],$active)){
+                $check = '考核报告';
+                break;
+            }
+        }
+    }
+    return $check;
 }

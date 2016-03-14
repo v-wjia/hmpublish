@@ -44,7 +44,7 @@ function get_charts($term)
 //            $output .= groundwater_quality($tid);
             break;
         case 'groundwaterlevel':
-            $output .= groundwaterlevel($tid);
+            $drupal_settings += groundwaterlevel($term);
             break;
     }
     if (!empty($settings)) {
@@ -88,71 +88,7 @@ function rainwater_utilization($tid)
     $xAxis = build_category_axis($category);
     $yAxis = build_value_axis(array(array('水量', '万立方米'), array('百分比', '%')));
     $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
-//    $settings[]=array(
-//        'chartType' => 'line',
-//        'useType' => array('line', 'bar'),
-//        'containerId' =>  'line_chart',
-//        'options'=>array(
-//            'tooltip' => array('trigger' => 'axis'),
-//            'legend' => array(
-//                'data' => array('市政杂用水量', '雨水收集利用量','雨水资源利用率')
-//            ),
-//            'toolbox' => array(
-//                'show' => TRUE,
-//                'feature' => array(
-//                    'mark' => array('show' => TRUE),
-//                    'dataView' => array('show' => TRUE, 'readOnly' => false),
-//                    'magicType' => array(
-//                        'show' => TRUE,
-//                        'type' => array('line', 'bar')
-//                    ),
-//                    'restore' => array('show' => TRUE),
-//                    'saveAsImage' => array('show' => TRUE),
-//                )
-//            ),
-//            'calculable'=>TRUE,
-//            'xAxis' => array(
-//                '0' => array(
-//                    'type' => 'category',
-//                    'data' => $category,
-//                )
-//            ),
-//            'yAxis' => array(
-//                '0' => array(
-//                    'type' => 'value',
-//                    'name' =>'水量',
-//                    'axisLabel'=>array('formatter'=>'{value}万立方米'),
-//                    'splitArea' => TRUE
-//                ),
-//                '1' => array(
-//                    'type' => 'value',
-//                    'name' =>'百分比',
-//                    'axisLabel'=>array('formatter'=>'{value}%'),
-//                    'splitArea' => TRUE
-//                ),
-//            ),
-//            'series' => array(
-//                '0' => array(
-//                    'name' => "市政杂用水量",
-//                    'type' => 'bar',
-//                    'data' => $municipal_consumption,
-//                ),
-//                '1' => array(
-//                    'name' => "雨水收集利用量",
-//                    'type' => 'bar',
-//                    'data' => $rainwater_collection_consumption,
-//                ),
-//                '2'=>array(
-//                    'name' => "雨水资源利用率",
-//                    'type' => 'line',
-//                    'yAxisIndex'=>1,
-//                    'data' => $rainwater_utilization,
-//                ),
-//            ),
-//
-//        ),
-//
-//    );
+
     return $settings;
 }
 
@@ -210,134 +146,14 @@ function npsp_data($tid)
     $settings[] = build_settings($series_ph, $legend_ph, $xAxis_ph, $yAxis_ph);
     return $settings;
 
-    $settings[] = array(
-        'chartType' => 'line',
-        'useType' => array('line', 'bar'),
-        'containerId' => 'line_chart',
-        'options' => array(
-            'tooltip' => array('trigger' => 'axis'),
-            'legend' => array(
-                'data' => array('SS浓度', 'COD浓度', '氨氮浓度', 'TN浓度', 'TP浓度')
-            ),
-            'toolbox' => array(
-                'show' => TRUE,
-                'feature' => array(
-                    'mark' => array('show' => TRUE),
-                    'dataView' => array('show' => TRUE, 'readOnly' => FALSE),
-                    'magicType' => array(
-                        'show' => TRUE,
-                        'type' => array('line', 'bar')
-                    ),
-                    'restore' => array('show' => TRUE),
-                    'saveAsImage' => array('show' => TRUE),
-                )
-            ),
-            'calculable' => TRUE,
-            'xAxis' => array(
-                '0' => array(
-                    'type' => 'category',
-                    'data' => $category,
-                )
-            ),
-            'yAxis' => array(
-                '0' => array(
-                    'type' => 'value',
-                    'name' => '污染浓度',
-                    'axisLabel' => array('formatter' => '{value}mg/L'),
-                    'splitArea' => TRUE
-                ),
-            ),
-            'series' => array(
-                '0' => array(
-                    'name' => "SS浓度",
-                    'type' => 'bar',
-                    'data' => $ss,
-                ),
-                '1' => array(
-                    'name' => "COD浓度",
-                    'type' => 'bar',
-                    'data' => $cod,
-                ),
-                '2' => array(
-                    'name' => "氨氮浓度",
-                    'type' => 'bar',
-                    'data' => $nh3_n,
-                ),
-                '3' => array(
-                    'name' => "TN浓度",
-                    'type' => 'bar',
-                    'data' => $tn,
-                ),
-                '4' => array(
-                    'name' => "TP浓度",
-                    'type' => 'bar',
-                    'data' => $tp,
-                ),
-
-            ),
-
-        ),
-
-    );
-
-    $settings[] = array(
-        'chartType' => 'line',
-        'useType' => array('line', 'bar'),
-        'containerId' => 'line_chart',
-        'options' => array(
-            'tooltip' => array('trigger' => 'axis'),
-            'legend' => array(
-                'data' => array('PH值')
-            ),
-            'toolbox' => array(
-                'show' => TRUE,
-                'feature' => array(
-                    'mark' => array('show' => TRUE),
-                    'dataView' => array('show' => TRUE, 'readOnly' => FALSE),
-                    'magicType' => array(
-                        'show' => TRUE,
-                        'type' => array('line', 'bar')
-                    ),
-                    'restore' => array('show' => TRUE),
-                    'saveAsImage' => array('show' => TRUE),
-                )
-            ),
-            'calculable' => TRUE,
-            'xAxis' => array(
-                '0' => array(
-                    'type' => 'category',
-                    'data' => $category,
-                )
-            ),
-            'yAxis' => array(
-                '0' => array(
-                    'type' => 'value',
-                    'name' => 'PH值',
-                    'axisLabel' => array('formatter' => '{value} '),
-                    'splitArea' => TRUE
-                ),
-            ),
-            'series' => array(
-                '0' => array(
-                    'name' => "PH值",
-                    'type' => 'bar',
-                    'data' => $ph,
-                ),
-            ),
-
-        ),
-
-    );
-
-    return $settings;
 }
 
 /*
  * 地下水位
  */
-function groundwaterlevel($tid)
+function groundwaterlevel($term)
 {
-
+    $tid = $term->tid;
     if (variable_get('tchart_show_deep_' . $tid, FALSE)) {
         //添加:获取深度选项
 
@@ -355,18 +171,44 @@ function groundwaterlevel($tid)
         ->orderBy('samplingtime', 'ASC');
     $data = $query->execute();
     $result = groundwaterlevel_chart($data);
-//  $result['legend'] += $temp_result['legend'];
-//  $result['settings'] += $temp_result['settings'];
-//    }
     //升序排列legend
     asort($result['legend']);
+
+    if(empty($result['legend'])){
+        return [];
+    }
+    //表格
+    $header = array('名称', '区域', '历史平均水位', '最大值', '最小值', '平均值');
+    $table_depth = array();
+    foreach ($result['legend'] as $item) {
+        $depth_data = $result['settings'][$item]['data'];
+        $count = 0;
+        $max = $depth_data[0][1];
+        $min = $max;
+        $total = 0;
+        //最大最小平均值
+        foreach ($depth_data as $each_depth) {
+            if ($max < $each_depth[1]) {
+                $max = $each_depth[1];
+            }
+            if ($min > $each_depth[1]) {
+                $min = $each_depth[1];
+            }
+            $total += $each_depth[1];
+            $count++;
+        }
+        $table_depth[] = array('name' => $item, 'area' => $term->name, 'historicalaverage' => $result['settings'][$item]['average'].'m', 'max' => $max.'m', 'min' => $min.'m', 'average' => number_format($total / $count, 2).'m');
+    }
+    $chart_set = ['#theme' => 'tchart_report', '#header' => $header, '#items' => $table_depth];
+
     $set = tchart_build_timechart_array($result['legend'], $result['settings'], '', array(
         'unit' => '深度',
         'per' => 'm'
     ));
 
-    return theme('tchart_time_chart', $set);
-//    return $settings;
+    $settings[] = $set;
+    $settings[] = $chart_set;
+    return $settings;
 }
 
 /**
@@ -390,8 +232,10 @@ function groundwaterlevel_chart($data, $containerId = -1)
             $category[] = $name;
             $chart_set[$name]['name'] = $name;
             $chart_set[$name]['type'] = 'line';
+            $chart_set[$name]['average'] = $entry->historicalaverage;
             $chart_set[$name]['data'] = array();
         }
+
 
         foreach ($category as $cat) {
 
@@ -500,22 +344,30 @@ function ecologicalbankline_data($tid)
     $species_richness = array();
     $abundance = array();
     foreach ($data as $entry) {
-        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
+        $samplingtime[] = date('Y年', strtotime($entry->samplingtime));
+        $chart_1 [] =
         $survival_rate[] = $entry->survival_rate;
         $coverage[] = $entry->coverage;
         $bankline_length[] = $entry->bankline_length;
         $species_richness[] = $entry->species_richness;
         $abundance[] = $entry->abundance;
     }
-
+    $category = array('成活率', '盖率');
     $query_data[] = $survival_rate;
     $query_data[] = $coverage;
+
+    $legend = $samplingtime;
+    $series = build_series($query_data, $legend, build_type(2, 'bar'));
+    $xAxis = build_value_axis(array(array(' ', ' ')));
+    $yAxis = build_category_axis($category);
+    $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
+
+    unset($query_data);
+    $category = array('岸线长度', '物种丰富度');
     $query_data[] = $bankline_length;
     $query_data[] = $species_richness;
-    $query_data[] = $abundance;
-
-    $legend = array('成活率', '盖度', '生态岸线长度', '物种丰富度', '物种多度');
-    $series = build_series($query_data, $legend, build_type(5, 'bar'));
+//    $query_data[] = $abundance;
+    $series = build_series($query_data, $legend, build_type(2, 'bar'));
     $xAxis = build_value_axis(array(array(' ', ' ')));
     $yAxis = build_category_axis($category);
     $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
@@ -622,14 +474,6 @@ function groundwater_quality($tid, $date = '')
 
 function build_grounderwater_array($equipment, $field, $value, $reference, $result)
 {
-//    $output='';
-//    $output.='<table><tr>';
-//    $output.='<td>'.$equipment.'</td>';
-//    $output.='<td>'.$field.'</td>';
-//    $output.='<td>'.$value.'</td>';
-//    $output.='<td>'.$reference.'</td>';
-//    $output.='<td>'.$result.'</td>';
-//    $output.='</tr></table>';
     return array($equipment, $field, $value, $reference, $result);
 }
 
@@ -646,7 +490,7 @@ function waterenviroment_quality($tid)
         ->orderBy('samplingtime', 'ASE')
         ->execute();
 
-    //两类参数
+    //三类参数
     //可重构:后台设置
     $category = array(
         0 => array(
@@ -670,9 +514,11 @@ function waterenviroment_quality($tid)
 
     );
 
+    $data_set = array();
     //数据源分类
     foreach ($date_query as $item) {
         $entry = (array)$item;
+        $data_set[] = $entry;
         unset($entry['t_id']);
         unset($entry['id']);
         unset($entry['uploadid']);
@@ -683,6 +529,7 @@ function waterenviroment_quality($tid)
             $data_settings[$chart_name]['#theme'] = 'tchart_time_chart2';
             $data_settings[$chart_name]['#title'] = $chart_name;
             $data_settings[$chart_name]['#category'] = $category_1;
+            $data_settings[$chart_name]['#height'] = 270;
             //添加item
             foreach ($category_1 as $key => $value) {
                 $data_settings[$chart_name]['#items'][$key][] = $entry[$key];
@@ -691,8 +538,51 @@ function waterenviroment_quality($tid)
         }
     }
 
-//    drupal_render($data_settings);
-    return $data_settings;
+
+    //计算水质属性
+    $category = array();
+    //所有时间
+    $timeline = array();
+    $origin_items = array();
+    foreach ($data_set as $item) {
+        $item_time = $item['samplingtime'];
+        if (!in_array($item['category'], $category)) {
+            $category[] = $item['category'];
+        }
+        if (!in_array($item['samplingtime'], $timeline)) {
+            $timeline[] = $item['samplingtime'];
+        }
+        $origin_items[$item['category']][$item_time] = $item['quality'];
+    }
+    if(empty($category)){
+        return array($data_settings);
+    }
+
+    //主题,标题
+    $items = array('#theme' => 'tchart_time_chart2', '#title' => '水质参数','#height'=>270,
+        '#category' => array(
+            'samplingtime' => array('时间'),
+        ));
+    //添加类别
+    foreach ($category as $_category) {
+        $items['#category'][$_category] = array(
+            $_category.'-水质'
+        );
+    }
+    $ordered_items=array();
+    $ordered_items['samplingtime']=$timeline;
+    //水质参数添加到时间轴,缺少的为0
+    foreach ($timeline as $_timeline) {
+        foreach ($category as $_category) {
+            if (isset($origin_items[$_category][$_timeline])) {
+                $ordered_items[$_category][] = $origin_items[$_category][$_timeline];
+            } else {
+                $ordered_items[$_category][] = 0;
+            }
+        }
+    }
+    $items['#items' ]= $ordered_items;
+    return array($data_settings,$items);
 
 
 }
@@ -709,20 +599,20 @@ function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
             'tooltip' => array('trigger' => 'axis'),
             'legend' => array(
                 'data' => $legend,
-                'x' => 'left',
+                'x' => 'center',
             ),
             'toolbox' => array(
-                'show' => TRUE,
-                'feature' => array(
-                    'mark' => array('show' => TRUE),
-                    'dataView' => array('show' => TRUE, 'readOnly' => FALSE),
-                    'magicType' => array(
-                        'show' => TRUE,
-                        'type' => array('line', 'bar')
-                    ),
-                    'restore' => array('show' => TRUE),
-                    'saveAsImage' => array('show' => TRUE),
-                )
+                'show' => FALSE,
+//                'feature' => array(
+//                    'mark' => array('show' => TRUE),
+//                    'dataView' => array('show' => TRUE, 'readOnly' => FALSE),
+//                    'magicType' => array(
+//                        'show' => TRUE,
+//                        'type' => array('line', 'bar')
+//                    ),
+//                    'restore' => array('show' => TRUE),
+//                    'saveAsImage' => array('show' => TRUE),
+//                )
             ),
             'calculable' => TRUE,
             'xAxis' => $xAxis,
@@ -822,7 +712,6 @@ function build_time_series($data, $type, $yAxisIndex = 0)
     $series[] = $entry;
     $count++;
 //    }
-    print_r($series);
     return $series;
 }
 
@@ -872,7 +761,7 @@ function build_value_axis($name_label)
 /**
  * 创建时间轴的可渲染数组
  */
-function tchart_build_timechart_array($category, $settings, $title = '', $unit = array(
+function tchart_build_timechart_array($category, $settings, $title = ' ', $unit = array(
     'unit' => '',
     'per' => ''
 ))
@@ -884,11 +773,12 @@ function tchart_build_timechart_array($category, $settings, $title = '', $unit =
     if (!array_key_exists('per', $unit)) {
         $unit['per'] = '';
     }
-    $renderable['unit'] = $unit;
-    $renderable['items'] = $settings;
-    $renderable['legend'] = $category;
-    $renderable['title'] = $title;
-    $renderable['div_id'] = '';
+    $renderable['#theme'] = 'tchart_time_chart';
+    $renderable['#unit'] = $unit;
+    $renderable['#items'] = $settings;
+    $renderable['#legend'] = $category;
+    $renderable['#title'] = $title;
+    $renderable['#div_id'] = '';
     return $renderable;
 }
 

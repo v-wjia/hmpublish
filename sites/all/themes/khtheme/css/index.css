@@ -123,7 +123,8 @@ body{
 
 .main .right{
 	width: 835px;
-	height: 1500px;
+	height: auto;
+	min-height: 1500px;
 	background: #f3f3f3;
 	float: left;
 }

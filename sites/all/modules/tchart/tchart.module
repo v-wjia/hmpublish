@@ -355,7 +355,7 @@ function tchart_block_view($delta = '')
                 }
                 if ($delta == 'side_navigation') {
                     $block['content'] = tchart_render_navigation($tchart_cache_content['items'][1], $tchart_cache_content['active'], '海绵城市考核指标');
-                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active'], '考核区域');
+                    $block['content'] .= tchart_render_navigation($tchart_cache_content['items'][3], $tchart_cache_content['active'], _get_check($tchart_cache_content['items'][2], $tchart_cache_content['active']));
                 } else {
                     $block['content'] = tchart_render_navigation($tchart_cache_content['items'][2], $tchart_cache_content['active'], '', 'tchart_nav_button', 'tid');
                 }
@@ -464,6 +464,7 @@ function tchart_theme($existing, $type, $theme, $path)
         ),
         'tchart_time_chart' => array(
             'variables' => array(
+                'title' => '',
                 'items' => NULL,
                 'legend' => NULL,
                 'unit' => array('unit' => '', 'per' => ''),
@@ -475,6 +476,7 @@ function tchart_theme($existing, $type, $theme, $path)
             'variables' => array(
                 'items' => NULL,
                 'title' => NULL,
+                'height' => NULL,
                 'category' => NULL,
                 'date' => NULL,
                 'attributes' => array(),
@@ -682,16 +684,18 @@ function theme_tchart_report($variables)
 				}
 			</style>';
 
-    //渲染时间
-    $output .= '<div class="data-table">
+    if(!empty($date)) {
+        //渲染时间
+        $output .= '<div class="data-table">
 				<table widh="100%" align="center" CELLSPACING="0" CELLPADDING="0">';
 
-    $output .= '<tr>';
-    foreach ($date as $date_link) {
-        $output .= "<td class='$date_link[1]'>" . $date_link[0] . '</td>';
+        $output .= '<tr>';
+        foreach ($date as $date_link) {
+            $output .= "<td class='$date_link[1]'>" . $date_link[0] . '</td>';
+        }
+        $output .= '</table>';
+        $output .= '</div>';
     }
-    $output .= '</table>';
-    $output .= '</div>';
 
     //渲染表头
 
@@ -857,6 +861,7 @@ function theme_tchart_time_chart2($variables)
     $category = $variables['category'];
     $title = isset($variables['title']) ? $variables['title'] : " ";
 
+    $height = isset($variables['height'])?$variables['height']:400;
 
     if (array_key_exists('div_id', $variables) && !empty($variables['div_id'])) {
         $div_id = 'chart_' . $variables['div_id'];
@@ -932,7 +937,7 @@ function theme_tchart_time_chart2($variables)
     //加载js
     drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
     $output .=
-        '<div id="' . $div_id . '" style="width: 700px;height:400px;"></div>
+        '<div id="' . $div_id . '" style="width: 700px;height:'.$height.'px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById(\'' . $div_id . '\'));

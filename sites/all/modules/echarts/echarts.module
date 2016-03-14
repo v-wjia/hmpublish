@@ -37,7 +37,7 @@ function render_echarts($settings) {
       if (!isset($settings['echart'][$id]['containerId'])) {
         $settings['echart'][$id]['containerId'] = drupal_strtolower(str_replace(" ", "-", $id));
       }
-      $ret .= "<div style='height:500px;' id='{$settings['echart'][$id]['containerId']}'></div>";      
+      $ret .= "<div style='height:270px;' id='{$settings['echart'][$id]['containerId']}'></div>";
     }
   }
   
