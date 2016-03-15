@@ -123,9 +123,15 @@ function tchart_term_form()
                     '#default_value' => variable_get('tchart_term_' . $term->tid, FALSE),
                     '#required' => FALSE,
                 );
-                $form['tchart_show_depth_' . $term->tid] = array(
+                $form['tchart_show_children_' . $term->tid] = array(
                     '#type' => 'checkbox',
                     '#title' => t('显示子内容'),
+                    '#default_value' => variable_get('tchart_show_children_' . $term->tid, FALSE),
+                    '#required' => FALSE,
+                );
+                $form['tchart_show_depth_' . $term->tid] = array(
+                    '#type' => 'checkbox',
+                    '#title' => t('显示子内容并展示'),
                     '#default_value' => variable_get('tchart_show_depth_' . $term->tid, FALSE),
                     '#required' => FALSE,
                 );

@@ -35,7 +35,7 @@ function get_charts($term)
             $settings += wastewater_reuse_rate($tid);
             break;
         case 'npsp_data':
-            $settings += npsp_data($tid);
+            $drupal_settings += npsp_data($tid);
             break;
         case 'ecologicalbankline_data':
             $settings += ecologicalbankline_data($tid);
@@ -97,54 +97,101 @@ function rainwater_utilization($tid)
  */
 function npsp_data($tid)
 {
-    $query = db_select('NPSP_data', 'n');
-    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-    $data = $query->execute();
+    $data_settings = array();
+    $date_query = db_select('npsp_data', 'n')
+        ->fields('n')
+        ->condition('t_id', $tid)
+        ->orderBy('samplingtime', 'ASE')
+        ->execute();
 
-    $category = array();
-    $ph = array();
-    $do = array();
-    $ss = array();
-    $cod = array();
-    $nh3_n = array();
-    $tn = array();
-    $tp = array();
-    foreach ($data as $entry) {
-        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
-        //PH
-        $ph[] = $entry->PH;
-        //DO
-        $do[] = $entry->DO;
-        //SS
-        $ss[] = $entry->SS;
-        //COD
-        $cod[] = $entry->COD;
-        //NH3-N
-        $nh3_n[] = $entry->NH3_N;
-        //TN
-        $tn[] = $entry->TN;
-        //TP
-        $tp[] = $entry->TP;
+    //一类参数
+    //可重构:后台设置
+    $category = array(
+        0 => array(
+            'samplingtime' => array('时间'),
+            'SS' => array('SS削减率', '%'),
+            'COD' => array('COD削减率', '%'),
+            'NH3_N' => array('氨氮削减率', '%'),
+            'TN' => array('TN削减率', '%'),
+            'TP' => array('TP削减率', '%'),
+        ),
+
+    );
+
+    $data_set = array();
+    //数据源分类
+    foreach ($date_query as $item) {
+        $entry = (array)$item;
+        $data_set[] = $entry;
+        unset($entry['t_id']);
+        unset($entry['id']);
+        unset($entry['uploadid']);
+        $i = 1;
+        foreach ($category as $category_1) {
+            //添加theme和title
+            $chart_name = taxonomy_term_load($item->t_id)->name;
+            $chart_drupal = '-'.$chart_name;
+            $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
+            $data_settings[$chart_drupal]['#title'] = $chart_name;
+            $data_settings[$chart_drupal]['#category'] = $category_1;
+            $data_settings[$chart_drupal]['#height'] = 270;
+            //添加item
+            foreach ($category_1 as $key => $value) {
+                $data_settings[$chart_drupal]['#items'][$key][] = $entry[$key];
+            }
+            $i++;
+        }
     }
 
-    $query_data_po[] = $ss;
-    $query_data_po[] = $cod;
-    $query_data_po[] = $nh3_n;
-    $query_data_po[] = $tn;
-    $query_data_po[] = $tp;
-    $legend_po = array('SS浓度', 'COD浓度', '氨氮浓度', 'TN浓度', 'TP浓度');
-    $series_po = build_series($query_data_po, $legend_po, build_type(5, 'bar'));
-    $xAxis = build_category_axis($category);
-    $yAxis_po = build_value_axis(array(array('污染物浓度', 'mg/L')));
-    $settings[] = build_settings($series_po, $legend_po, $xAxis, $yAxis_po);
-
-    $query_data_ph[] = $ph;
-    $legend_ph = array('PH');
-    $series_ph = build_series($query_data_ph, $legend_ph, build_type(1, 'bar'));
-    $xAxis_ph = build_category_axis($category);
-    $yAxis_ph = build_value_axis(array(array('PH值', ' ')));
-    $settings[] = build_settings($series_ph, $legend_ph, $xAxis_ph, $yAxis_ph);
-    return $settings;
+    return $data_settings;
+//    $query = db_select('NPSP_data', 'n');
+//    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
+//    $data = $query->execute();
+//
+//    $category = array();
+//    $ph = array();
+//    $do = array();
+//    $ss = array();
+//    $cod = array();
+//    $nh3_n = array();
+//    $tn = array();
+//    $tp = array();
+//    foreach ($data as $entry) {
+//        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
+//        //PH
+//        $ph[] = $entry->PH;
+//        //DO
+//        $do[] = $entry->DO;
+//        //SS
+//        $ss[] = $entry->SS;
+//        //COD
+//        $cod[] = $entry->COD;
+//        //NH3-N
+//        $nh3_n[] = $entry->NH3_N;
+//        //TN
+//        $tn[] = $entry->TN;
+//        //TP
+//        $tp[] = $entry->TP;
+//    }
+//
+//    $query_data_po[] = $ss;
+//    $query_data_po[] = $cod;
+//    $query_data_po[] = $nh3_n;
+//    $query_data_po[] = $tn;
+//    $query_data_po[] = $tp;
+//    $legend_po = array('SS浓度', 'COD浓度', '氨氮浓度', 'TN浓度', 'TP浓度');
+//    $series_po = build_series($query_data_po, $legend_po, build_type(5, 'bar'));
+//    $xAxis = build_category_axis($category);
+//    $yAxis_po = build_value_axis(array(array('污染物浓度', 'mg/L')));
+//    $settings[] = build_settings($series_po, $legend_po, $xAxis, $yAxis_po);
+//
+//    $query_data_ph[] = $ph;
+//    $legend_ph = array('PH');
+//    $series_ph = build_series($query_data_ph, $legend_ph, build_type(1, 'bar'));
+//    $xAxis_ph = build_category_axis($category);
+//    $yAxis_ph = build_value_axis(array(array('PH值', ' ')));
+//    $settings[] = build_settings($series_ph, $legend_ph, $xAxis_ph, $yAxis_ph);
+//    return $settings;
 
 }
 
@@ -154,7 +201,7 @@ function npsp_data($tid)
 function groundwaterlevel($term)
 {
     $tid = $term->tid;
-    if (variable_get('tchart_show_deep_' . $tid, FALSE)) {
+    if (variable_get('tchart_show_depth_' . $tid, FALSE)) {
         //添加:获取深度选项
 
     }
@@ -526,13 +573,14 @@ function waterenviroment_quality($tid)
         foreach ($category as $category_1) {
             //添加theme和title
             $chart_name = $item->category . '参数' . $i;
-            $data_settings[$chart_name]['#theme'] = 'tchart_time_chart2';
-            $data_settings[$chart_name]['#title'] = $chart_name;
-            $data_settings[$chart_name]['#category'] = $category_1;
-            $data_settings[$chart_name]['#height'] = 270;
+            $chart_drupal = '-'.$chart_name;
+            $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
+            $data_settings[$chart_drupal]['#title'] = $chart_name;
+            $data_settings[$chart_drupal]['#category'] = $category_1;
+            $data_settings[$chart_drupal]['#height'] = 270;
             //添加item
             foreach ($category_1 as $key => $value) {
-                $data_settings[$chart_name]['#items'][$key][] = $entry[$key];
+                $data_settings[$chart_drupal]['#items'][$key][] = $entry[$key];
             }
             $i++;
         }

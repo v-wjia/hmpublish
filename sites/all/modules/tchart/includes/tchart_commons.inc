@@ -109,7 +109,7 @@ function tchart_get_block_content($tid, $depth)
         }
         $terms = taxonomy_get_tree($vid, $item->tid, 1);
         foreach ($terms as $term) {
-            if (variable_get('tchart_show_depth_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
+            if (variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
                 $data_array = _get_children($term, $active);
             } else {
                 $data_array = array(
@@ -134,7 +134,7 @@ function _get_children($term, $active)
         'tid' => $term->tid,
     );
     $children = array();
-    if (variable_get('tchart_show_depth_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
+    if (variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
         $children_terms = taxonomy_get_children($term->tid);
         foreach ($children_terms as $children_term) {
             $children[] = _get_children($children_term, $active);
