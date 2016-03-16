@@ -32,7 +32,7 @@ function get_charts($term)
             $drupal_settings += waterenviroment_quality($tid);
             break;
         case 'wastewater_reuse_rate':
-            $settings += wastewater_reuse_rate($tid);
+            $drupal_settings += wastewater_reuse_rate($tid);
             break;
         case 'npsp_data':
             $drupal_settings += npsp_data($tid);
@@ -288,7 +288,7 @@ function pipe_leakage_rate($tid)
         'yAxis_extra' =>
             '{ type : \'value\' ,
             name : \'  \' ,
-            max : 20,
+            min : 20,
             axisLabel: {
             	formatter : \'{value}  \'
             },
@@ -334,39 +334,43 @@ function pipe_leakage_rate($tid)
  */
 function wastewater_reuse_rate($tid)
 {
-    $query = db_select('wastewater_reuse_rate', 'n');
-    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-    $data = $query->execute();
 
-    $category = array();
-    $sewage_treat_capacity = array();
-    $reuse_capacity = array();
-    $ecological_capacity = array();
-    $reuse_rate = array();
-    foreach ($data as $entry) {
-        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
-        $sewage_treat_capacity[] = $entry->sewage_treat_capacity;
-        $reuse_capacity[] = $entry->reuse_capacity;
-        $ecological_capacity[] = $entry->ecological_capacity;
-        $reuse_rate[] = $entry->reuse_rate;
-    }
+    $data_query = sampling_query($tid,'wastewater_reuse_rate');
+    $category = array(
+        0 => array(
+            'samplingtime' => array('时间'),
+            'sewage_treat_capacity' => array('污水处理量', '万m³'),
+            'chilledwater' => array('冷却水', '万m³'),
+            'irrigationwater' => array('灌溉水', '万m³'),
+            'roadcleanwater' => array('道路清洗', '万m³'),
+            'ecological_capacity' => array('生态处理水量', '万m³'),
+            'reuse_rate' => array('污水再生利用率', '%', 'line'),
+        ),
+    );
+    $chart_name = ['1','2'];
 
-    $query_data[] = $sewage_treat_capacity;
-    $query_data[] = $reuse_capacity;
-    $query_data[] = $ecological_capacity;
-    $query_data[] = $reuse_rate;
+    $option = [
+        [
+            'yAxis_extra' =>
+                '{ type : \'value\' ,
+            name : \'  \' ,
+            min : 20,
+            axisLabel: {
+            	formatter : \'{value}  \'
+            },
+            },',
+            'series_option'=>
+                [
+                    'chilledwater'=>'stack : \'water\',',
+                    'irrigationwater'=>'stack : \'water\',',
+                    'roadcleanwater'=>'stack : \'water\',',
+                    'reuse_rate'=>'yAxisIndex : 1,',
+                ]
+        ]
+    ];
+    $data_settings = time_chart2_build($category,$data_query,$chart_name,$option);
+    return $data_settings;
 
-    $legend = array('污水处理量', '再生回用水量', '生态处理水量', '污水再生利用率');
-    $series = build_series($query_data, $legend, array(
-        'bar',
-        'bar',
-        'bar',
-        'line'
-    ), array(0, 0, 0, 1));
-    $xAxis = build_category_axis($category);
-    $yAxis = build_value_axis(array(array('水量', '万立方米'), array('百分比', '%')));
-    $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
-    return $settings;
 }
 
 /**
@@ -947,7 +951,7 @@ function _get_children_tids($tid)
     return $tids;
 }
 
-function time_chart2_build($category,$date_query,$chart_name){
+function time_chart2_build($category,$date_query,$chart_name,$option=array()){
     $data_settings = array();
     $data_set = array();
     //数据源分类
@@ -972,5 +976,22 @@ function time_chart2_build($category,$date_query,$chart_name){
             $i++;
         }
     }
+    if(!empty($option)) {
+        $i = 0;
+        foreach ($data_settings as $key => $value) {
+            @$data_settings[$key]['#option'] = $option[$i];
+            $i++;
+        }
+    }
     return $data_settings;
+}
+
+function sampling_query($tid,$db){
+    $data_query = db_select($db, 'n')
+        ->fields('n')
+        ->condition('t_id', $tid)
+        ->orderBy('samplingtime', 'ASE')
+        ->execute();
+    return $data_query;
+
 }
