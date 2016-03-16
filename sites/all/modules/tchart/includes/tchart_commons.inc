@@ -109,7 +109,7 @@ function tchart_get_block_content($tid, $depth)
         }
         $terms = taxonomy_get_tree($vid, $item->tid, 1);
         foreach ($terms as $term) {
-            if (variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
+            if ((variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE)) && in_array($term->tid, $active)) {
                 $data_array = _get_children($term, $active);
             } else {
                 $data_array = array(
@@ -134,7 +134,7 @@ function _get_children($term, $active)
         'tid' => $term->tid,
     );
     $children = array();
-    if (variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE) && in_array($term->tid, $active)) {
+    if ((variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE)) && in_array($term->tid, $active)) {
         $children_terms = taxonomy_get_children($term->tid);
         foreach ($children_terms as $children_term) {
             $children[] = _get_children($children_term, $active);
@@ -230,12 +230,38 @@ function _get_check($items, $active)
 {
     $check = '考核区域';
     foreach ($items as $item) {
-        if($item['data']['title'] == '报告'){
-            if(in_array($item['tid'],$active)){
+        if ($item['data']['title'] == '报告') {
+            if (in_array($item['tid'], $active)) {
                 $check = '考核报告';
                 break;
             }
         }
     }
     return $check;
+}
+
+/**
+ * 获得选项
+ */
+function _chart_option($option)
+{
+    $std_option = new stdClass();
+    //默认不反转xy
+    $std_option->reverse = isset($option['reverse']) ? $option['reverse'] : FALSE;
+    //默认显示时间区域
+    $std_option->show_zoom = isset($option['show_zoom']) ? $option['show_zoom'] : TRUE;
+    //赋值series选项
+    $std_option->series_option = isset($option['series_option']) ? $option['series_option'] : array();
+    //赋值xAxis选项
+    $std_option->xAxis_option = isset($option['xAxis_option']) ? $option['xAxis_option'] : "";
+    //赋值xAxis选项
+    $std_option->xAxis_extra = isset($option['xAxis_extra']) ? $option['xAxis_extra'] : "";
+    //赋值yAxis选项
+    $std_option->yAxis_option = isset($option['yAxis_option']) ? $option['yAxis_option'] : "";
+    //赋值yAxis选项
+    $std_option->yAxis_extra = isset($option['yAxis_extra']) ? $option['yAxis_extra'] : "";
+    //赋值legend选项
+    $std_option->legend_option = isset($option['legend_option']) ? $option['legend_option'] : "";
+
+    return $std_option;
 }

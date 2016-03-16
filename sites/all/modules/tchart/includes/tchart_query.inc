@@ -26,7 +26,7 @@ function get_charts($term)
             $settings += rainwater_utilization($tid);
             break;
         case 'pipe_leakage_rate':
-            $settings += pipe_leakage_rate($tid);
+            $drupal_settings += pipe_leakage_rate($tid);
             break;
         case 'waterenviroment_quality':
             $drupal_settings += waterenviroment_quality($tid);
@@ -45,6 +45,9 @@ function get_charts($term)
             break;
         case 'groundwaterlevel':
             $drupal_settings += groundwaterlevel($term);
+            break;
+        case 'streamflow_control_rate':
+            $drupal_settings += streamflow_control_rate($term);
             break;
     }
     if (!empty($settings)) {
@@ -130,7 +133,7 @@ function npsp_data($tid)
         foreach ($category as $category_1) {
             //添加theme和title
             $chart_name = taxonomy_term_load($item->t_id)->name;
-            $chart_drupal = '-'.$chart_name;
+            $chart_drupal = '-' . $chart_name;
             $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
             $data_settings[$chart_drupal]['#title'] = $chart_name;
             $data_settings[$chart_drupal]['#category'] = $category_1;
@@ -144,54 +147,6 @@ function npsp_data($tid)
     }
 
     return $data_settings;
-//    $query = db_select('NPSP_data', 'n');
-//    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-//    $data = $query->execute();
-//
-//    $category = array();
-//    $ph = array();
-//    $do = array();
-//    $ss = array();
-//    $cod = array();
-//    $nh3_n = array();
-//    $tn = array();
-//    $tp = array();
-//    foreach ($data as $entry) {
-//        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
-//        //PH
-//        $ph[] = $entry->PH;
-//        //DO
-//        $do[] = $entry->DO;
-//        //SS
-//        $ss[] = $entry->SS;
-//        //COD
-//        $cod[] = $entry->COD;
-//        //NH3-N
-//        $nh3_n[] = $entry->NH3_N;
-//        //TN
-//        $tn[] = $entry->TN;
-//        //TP
-//        $tp[] = $entry->TP;
-//    }
-//
-//    $query_data_po[] = $ss;
-//    $query_data_po[] = $cod;
-//    $query_data_po[] = $nh3_n;
-//    $query_data_po[] = $tn;
-//    $query_data_po[] = $tp;
-//    $legend_po = array('SS浓度', 'COD浓度', '氨氮浓度', 'TN浓度', 'TP浓度');
-//    $series_po = build_series($query_data_po, $legend_po, build_type(5, 'bar'));
-//    $xAxis = build_category_axis($category);
-//    $yAxis_po = build_value_axis(array(array('污染物浓度', 'mg/L')));
-//    $settings[] = build_settings($series_po, $legend_po, $xAxis, $yAxis_po);
-//
-//    $query_data_ph[] = $ph;
-//    $legend_ph = array('PH');
-//    $series_ph = build_series($query_data_ph, $legend_ph, build_type(1, 'bar'));
-//    $xAxis_ph = build_category_axis($category);
-//    $yAxis_ph = build_value_axis(array(array('PH值', ' ')));
-//    $settings[] = build_settings($series_ph, $legend_ph, $xAxis_ph, $yAxis_ph);
-//    return $settings;
 
 }
 
@@ -221,7 +176,7 @@ function groundwaterlevel($term)
     //升序排列legend
     asort($result['legend']);
 
-    if(empty($result['legend'])){
+    if (empty($result['legend'])) {
         return [];
     }
     //表格
@@ -244,7 +199,7 @@ function groundwaterlevel($term)
             $total += $each_depth[1];
             $count++;
         }
-        $table_depth[] = array('name' => $item, 'area' => $term->name, 'historicalaverage' => $result['settings'][$item]['average'].'m', 'max' => $max.'m', 'min' => $min.'m', 'average' => number_format($total / $count, 2).'m');
+        $table_depth[] = array('name' => $item, 'area' => $term->name, 'historicalaverage' => $result['settings'][$item]['average'] . 'm', 'max' => $max . 'm', 'min' => $min . 'm', 'average' => number_format($total / $count, 2) . 'm');
     }
     $chart_set = ['#theme' => 'tchart_report', '#header' => $header, '#items' => $table_depth];
 
@@ -304,35 +259,74 @@ function groundwaterlevel_chart($data, $containerId = -1)
  */
 function pipe_leakage_rate($tid)
 {
-    $query = db_select('pipe_leakage_rate', 'n');
-    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-    $data = $query->execute();
+    $data_query = db_select('pipe_leakage_rate', 'n')
+        ->fields('n')
+        ->condition('t_id', $tid)
+        ->orderBy('samplingtime', 'ASE')
+        ->execute();
 
-    $category = array();
-    $total_water_supply = array();
-    $actual_usage = array();
-    $pipe_leakage_rate = array();
-    foreach ($data as $entry) {
-        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
-        $total_water_supply[] = $entry->total_water_supply;
-        $actual_usage[] = $entry->actual_usage;
-        $pipe_leakage_rate[] = $entry->pipe_leakage_rate;
+    //三类参数
+    $category = array(
+        0 => array(
+            'samplingtime' => array('时间'),
+            'total_water_supply' => array('总供水量', '万m³'),
+            'actual_usage' => array('实际利用量', '万m³'),
+            'pipe_leakage_rate' => array('管网漏损率', '%', 'line'),
+        ),
+    );
+
+    $chart_name = ['chart1','chart2'];
+    $data_settings = time_chart2_build($category,$data_query,$chart_name);
+
+    $add = count(current($data_settings)['#items']['samplingtime']);
+
+    for($i = 1; $i<$add;$i++){
+
     }
+    $option = [[
+        'show_zoom' => FALSE,
+        'yAxis_extra' =>
+            '{ type : \'value\' ,
+            name : \'  \' ,
+            max : 20,
+            axisLabel: {
+            	formatter : \'{value}  \'
+            },
+            },',
+        'series_option' => ['pipe_leakage_rate' => '
+                yAxisIndex:1,
+                markLine:{
+                    lineStyle:{
+                        normal:{
+                            type:\'solid\',
+                        }
+                    },
+                    data : [
+                        [
+                            {
+                                cast:\'警戒值:12%\',
+                            symbol :\'rect\',
+                            symbolSize :1,
+                            coord: [0, 12]
+                            },
+                            {
+                                symbol :\'rect\',
+                                symbolSize :1,
+                                coord: ['.($add-1).', 12]
+                            }
+                        ],
+                    ],
+                },',
+            ],
+    ]
+    ];
+    $i = 1;
+    foreach ($data_settings as $key => $value) {
+        @$data_settings[$key]['#option'] = $option[$i - 1];
+        $i++;
+    }
+    return $data_settings;
 
-    $query_data[] = $total_water_supply;
-    $query_data[] = $actual_usage;
-    $query_data[] = $pipe_leakage_rate;
-
-    $legend = array('总供水量', '实际使用量', '管网控制率');
-    $series = build_series($query_data, $legend, array(
-        'bar',
-        'bar',
-        'line'
-    ), array(0, 0, 1));
-    $xAxis = build_category_axis($category);
-    $yAxis = build_value_axis(array(array('水量', '万立方米'), array('百分比', '%')));
-    $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
-    return $settings;
 }
 
 /**
@@ -573,7 +567,7 @@ function waterenviroment_quality($tid)
         foreach ($category as $category_1) {
             //添加theme和title
             $chart_name = $item->category . '参数' . $i;
-            $chart_drupal = '-'.$chart_name;
+            $chart_drupal = '-' . $chart_name;
             $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
             $data_settings[$chart_drupal]['#title'] = $chart_name;
             $data_settings[$chart_drupal]['#category'] = $category_1;
@@ -602,23 +596,23 @@ function waterenviroment_quality($tid)
         }
         $origin_items[$item['category']][$item_time] = $item['quality'];
     }
-    if(empty($category)){
+    if (empty($category)) {
         return array($data_settings);
     }
 
     //主题,标题
-    $items = array('#theme' => 'tchart_time_chart2', '#title' => '水质参数','#height'=>270,
+    $items = array('#theme' => 'tchart_time_chart2', '#title' => '水质参数', '#height' => 270,
         '#category' => array(
             'samplingtime' => array('时间'),
         ));
     //添加类别
     foreach ($category as $_category) {
         $items['#category'][$_category] = array(
-            $_category.'-水质'
+            $_category . '-水质'
         );
     }
-    $ordered_items=array();
-    $ordered_items['samplingtime']=$timeline;
+    $ordered_items = array();
+    $ordered_items['samplingtime'] = $timeline;
     //水质参数添加到时间轴,缺少的为0
     foreach ($timeline as $_timeline) {
         foreach ($category as $_category) {
@@ -629,12 +623,122 @@ function waterenviroment_quality($tid)
             }
         }
     }
-    $items['#items' ]= $ordered_items;
-    return array($data_settings,$items);
+    $items['#items'] = $ordered_items;
+    return array($data_settings, $items);
 
 
 }
 
+/**
+ * 年径流总量控制率
+ */
+function streamflow_control_rate($term)
+{
+    $tid = $term->tid;
+    $data_settings = array();
+    $date_query = db_select('streamflow_control_rate', 'n')
+        ->fields('n')
+        ->condition('t_id', $tid)
+        ->orderBy('samplingtime', 'ASE')
+        ->execute();
+
+    //三类参数
+    $category = array(
+        0 => array(
+            'samplingtime' => array('时间'),
+            'flow' => array('流量', 'm^3/s', 'line'),
+            'rainfall' => array('降雨量', 'mm', 'line'),
+        ),
+        1 => array(
+            'samplingtime' => array('时间'),
+            'streamflow_control_rate' => array('径流控制率', '%'),
+        ),
+        2 => array(
+            'samplingtime' => array('时间'),
+            'influentflow' => array('进水量', 'm³'),
+            'effluentflow' => array('出水量', 'm³'),
+            'reduction_rate' => array('削减率', '%'),
+        ),
+    );
+    $chart_title = ['', 'chart1', 'chart2', 'chart3'];
+
+
+    $data_set = array();
+    //数据源分类
+    foreach ($date_query as $item) {
+        $entry = (array)$item;
+        $data_set[] = $entry;
+        unset($entry['t_id']);
+        unset($entry['id']);
+        unset($entry['uploadid']);
+        $i = 1;
+        foreach ($category as $category_1) {
+            //添加theme和title
+            $chart_name = $chart_title[$i];
+            $chart_drupal = '-' . $chart_name;
+            $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
+//            $data_settings[$chart_drupal]['#title'] = $chart_name;
+            $data_settings[$chart_drupal]['#category'] = $category_1;
+            $data_settings[$chart_drupal]['#height'] = 270;
+            //添加item
+            foreach ($category_1 as $key => $value) {
+                $data_settings[$chart_drupal]['#items'][$key][] = $entry[$key];
+            }
+            $i++;
+        }
+    }
+    $add = count(current($data_settings)['#items']['samplingtime']);
+    $option = [[
+        'yAxis_extra' =>
+            '{ type : \'value\' ,
+            name : \'  \' ,
+            min : 15,
+            axisLabel: {
+            	formatter : \'{value}  \'
+            },
+            inverse:true,
+            },',
+        'series_option' => ['rainfall' => '
+                yAxisIndex:1,
+                areaStyle: {
+                    normal: {}
+                },
+                markLine:{
+                lineStyle:{
+                    normal:{
+                        type:\'solid\',
+                        }
+                },
+                data : [
+    [
+        {
+            cast:\'平均值:20\',
+            symbol :\'rect\',
+            symbolSize :1,
+            coord: [0, 20]
+        },
+        {
+            symbol :\'rect\',
+            symbolSize :1,
+            coord: ['.($add-1).', 20]
+        }
+    ],
+                ]
+                },',
+            'flow' => '
+                areaStyle: {
+                    normal: {}
+                },',],
+        'xAxis_option' => 'boundaryGap : false,',
+    ]
+    ];
+    $i = 1;
+    foreach ($data_settings as $key => $value) {
+        @$data_settings[$key]['#option'] = $option[$i - 1];
+        $i++;
+    }
+    return $data_settings;
+}
 
 function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
 {
@@ -841,4 +945,32 @@ function _get_children_tids($tid)
         }
     }
     return $tids;
+}
+
+function time_chart2_build($category,$date_query,$chart_name){
+    $data_settings = array();
+    $data_set = array();
+    //数据源分类
+    foreach ($date_query as $item) {
+        $entry = (array)$item;
+        $data_set[] = $entry;
+        unset($entry['t_id']);
+        unset($entry['id']);
+        unset($entry['uploadid']);
+        $i = 1;
+        foreach ($category as $category_1) {
+            //添加theme和title
+            $chart_drupal = '-' . $chart_name[$i];
+            $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
+//            $data_settings[$chart_drupal]['#title'] = $chart_name;
+            $data_settings[$chart_drupal]['#category'] = $category_1;
+            $data_settings[$chart_drupal]['#height'] = 270;
+            //添加item
+            foreach ($category_1 as $key => $value) {
+                $data_settings[$chart_drupal]['#items'][$key][] = $entry[$key];
+            }
+            $i++;
+        }
+    }
+    return $data_settings;
 }

@@ -408,9 +408,9 @@ function tchart_block_view($delta = '')
                 } else {
                     $output = '';
                     $output .= theme('tchart_top_nav', array(
-                            'items' => $items,
-                            'active' => $active
-                        ));
+                        'items' => $items,
+                        'active' => $active
+                    ));
                     $block['content'] = $output;
                 }
 
@@ -484,6 +484,7 @@ function tchart_theme($existing, $type, $theme, $path)
                 'title' => NULL,
                 'height' => NULL,
                 'category' => NULL,
+                'option' => array(),
                 'date' => NULL,
                 'attributes' => array(),
             ),
@@ -690,7 +691,7 @@ function theme_tchart_report($variables)
 				}
 			</style>';
 
-    if(!empty($date)) {
+    if (!empty($date)) {
         //渲染时间
         $output .= '<div class="data-table">
 				<table widh="100%" align="center" CELLSPACING="0" CELLPADDING="0">';
@@ -783,10 +784,8 @@ function theme_tchart_time_chart($variables)
     $series_out .= ']';
 
     //加载js
-//    drupal_add_js(drupal_get_path('module', 'echarts') . '/lib/echarts.js');
     drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
     $output .=
-//	'<div id="main" style="width: 600px;height:400px;"></div>
         '<div id="' . $div_id . '" style="width: 600px;height:400px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
@@ -866,8 +865,7 @@ function theme_tchart_time_chart2($variables)
     $items = $variables['items'];
     $category = $variables['category'];
     $title = isset($variables['title']) ? $variables['title'] : " ";
-
-    $height = isset($variables['height'])?$variables['height']:400;
+    $height = isset($variables['height']) ? $variables['height'] : 400;
 
     if (array_key_exists('div_id', $variables) && !empty($variables['div_id'])) {
         $div_id = 'chart_' . $variables['div_id'];
@@ -875,6 +873,8 @@ function theme_tchart_time_chart2($variables)
         $div_id = 'auto_chart_' . $tchart_div_id;
         $tchart_div_id++;
     }
+
+    $option = _chart_option($variables['option']);
 
     $output = '';
 
@@ -913,29 +913,29 @@ function theme_tchart_time_chart2($variables)
         $data_out = '';
         $count_cate = 0;
         foreach ($item as $item_key => $one_data) {
-            $data_out .= '[' . $count_cate . ',' . $one_data . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : " ") . '\'],';
+            $data_out .= '[' . ($option->reverse ? $one_data : $count_cate) . ',' . ($option->reverse ? $count_cate : $one_data) . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : " ") . '\'],';
             $count_cate++;
         }
+
+
         $series_out .= '{
             name: \'' . $category[$key][0] . '\',
-            type: \'' . (isset($category[$key][2]) ? isset($category[$key][2]) : 'bar') . '\',
-            data: [' . $data_out . ']
+            type: \'' . (isset($category[$key][2]) ? $category[$key][2] : 'bar') . '\',
+            data: [' . $data_out . '],' .
+            (isset($option->series_option[$key]) ? $option->series_option[$key] : "")
+            . '
         },';
     }
     $series_out .= ']';
 
 
     $formatter = 'function (params) {
-            var date = new Date(params[0].value[0]);
-            data = date.getFullYear() + \'-\'
-                   + (date.getMonth() + 1) + \'-\'
-                   + date.getDate() + \' \'
-                   + date.getHours() + \':\'
-                   + date.getMinutes();
-
+            if(params[0]==null){
+                return (params.data[0].cast);
+            }
 			output = params[0].name + \'<br/>\';
 			for(var i=0;i<params.length;i++){
-	 			output += params[i].seriesName + " : " + params[i].value[1] + params[i].value[2] +\'<br/>\';
+	 			output += params[i].seriesName + " : " + params[i].value[' . ($option->reverse ? '0' : '1') . '] + params[i].value[2] +\'<br/>\';
 	 		}
 			return output;
         }';
@@ -943,7 +943,7 @@ function theme_tchart_time_chart2($variables)
     //加载js
     drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
     $output .=
-        '<div id="' . $div_id . '" style="width: 700px;height:'.$height.'px;"></div>
+        '<div id="' . $div_id . '" style="width: 700px;height:' . $height . 'px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById(\'' . $div_id . '\'));
@@ -952,7 +952,6 @@ function theme_tchart_time_chart2($variables)
         var option = {
     title : {
         text : \'' . $title . '\',
-//        subtext : \'dataZoom支持\'
     },
     tooltip : {
         trigger: \'axis\',
@@ -967,28 +966,39 @@ function theme_tchart_time_chart2($variables)
             saveAsImage : {show: true}
         }
     },
-    dataZoom: {
+    ' . ($option->show_zoom ? ('dataZoom: {
         show: true,
-        start : 0
-    },
+        start : 0,
+        orient : \'' . ($option->reverse ? 'vertical' : 'horizontal') . '\'
+    },') : '') . '
     legend : {
         data : ' . $legend_out . ',
-        top : 20
+        top : 20 ,' .
+        $option->legend_option
+        . '
+
     },
-    xAxis : [
+    ' . ($option->reverse ? 'y' : 'x') . 'Axis : [
         {
             type : \'category\',
-            data : ' . $xAxis_category . '
-        }
+            data : ' . $xAxis_category . ',
+            ' . $option->xAxis_option . '
+        },' .
+        $option->xAxis_extra
+        . '
     ],
-    yAxis : [
+    ' . ($option->reverse ? 'x' : 'y') . 'Axis : [
         {
             type : \'value\' ,
             name : \'' . '  ' . '\' ,
             axisLabel: {
             	formatter : \'{value}' . '  ' . '\'
-            }
-        }
+            },
+            ' . $option->yAxis_option . '
+        },
+        ' .
+        $option->yAxis_extra
+        . '
     ],
     series : ' . $series_out . '
 };
