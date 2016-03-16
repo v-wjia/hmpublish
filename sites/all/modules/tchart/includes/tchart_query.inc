@@ -23,7 +23,7 @@ function get_charts($term)
     $output = '';
     switch ($category) {
         case 'rainwater_utilization':
-            $settings += rainwater_utilization($tid);
+            $drupal_settings += rainwater_utilization($tid);
             break;
         case 'pipe_leakage_rate':
             $drupal_settings += pipe_leakage_rate($tid);
@@ -61,6 +61,76 @@ function get_charts($term)
  */
 function rainwater_utilization($tid)
 {
+    $data_query = sampling_query($tid, 'rainwater_utilization');
+    $category = array(
+        0 => array(
+            'samplingtime' => array('时间'),
+            'municipal_consumption' => array('市政杂用水量', '万m³'),
+            'rainwater_collection_consumption' => array('雨水收集利用量', '万m³'),
+            'rainwater_utilization' => array('雨水资源利用率', ' ', 'line'),
+        ),
+    );
+    $chart_name = ['1', '2'];
+
+    $data_sets = time_chart2_build($category, $data_query, $chart_name);
+    $data_settings = $data_sets['data_settings'];
+    $add = count(current($data_settings)['#items']['samplingtime']);
+    $option = [
+        [
+            'yAxis_extra' =>
+                '{  type : \'value\' ,
+                    name : \'  \' ,
+                    min : 0,
+                    axisLabel: {
+            	        formatter : \'{value}  \'
+                    },
+                 },',
+            'series_option' =>
+                [
+                    'rainwater_utilization' => 'yAxisIndex : 1,
+                        markLine:{
+                            lineStyle:{
+                                normal:{
+                                    type:\'solid\',
+                                }
+                            },
+                            data : [
+                                [
+                                     {
+                                          cast:\'不达标:20%\',
+                                         symbol :\'rect\',
+                                          symbolSize :1,
+                                          coord: [0, 0.2]
+                                     },
+                                     {
+                                          symbol :\'rect\',
+                                          symbolSize :1,
+                                          coord: [' . ($add - 1) . ', 0.2]
+                                     }
+                                ],
+                                [
+                                     {
+                                          cast:\'达标:30%\',
+                                          symbol :\'rect\',
+                                          symbolSize :1,
+                                          coord: [0, 0.3]
+                                     },
+                                     {
+                                          symbol :\'rect\',
+                                          symbolSize :1,
+                                          coord: [' . ($add - 1) . ', 0.3]
+                                     }
+                                ],
+                            ],
+                        },
+                    ',
+                ]
+        ]
+    ];
+
+    add_option($data_settings,$option);
+    return $data_settings;
+
 
     //雨水资源利用率
     $query = db_select('rainwater_utilization', 'n');
@@ -275,20 +345,17 @@ function pipe_leakage_rate($tid)
         ),
     );
 
-    $chart_name = ['chart1','chart2'];
-    $data_settings = time_chart2_build($category,$data_query,$chart_name);
+    $chart_name = ['chart1', 'chart2'];
+    $data_settings = time_chart2_build($category, $data_query, $chart_name)['data_settings'];
 
     $add = count(current($data_settings)['#items']['samplingtime']);
 
-    for($i = 1; $i<$add;$i++){
-
-    }
     $option = [[
         'show_zoom' => FALSE,
         'yAxis_extra' =>
             '{ type : \'value\' ,
             name : \'  \' ,
-            min : 20,
+            max : 100,
             axisLabel: {
             	formatter : \'{value}  \'
             },
@@ -312,12 +379,12 @@ function pipe_leakage_rate($tid)
                             {
                                 symbol :\'rect\',
                                 symbolSize :1,
-                                coord: ['.($add-1).', 12]
+                                coord: [' . ($add - 1) . ', 12]
                             }
                         ],
                     ],
                 },',
-            ],
+        ],
     ]
     ];
     $i = 1;
@@ -335,7 +402,7 @@ function pipe_leakage_rate($tid)
 function wastewater_reuse_rate($tid)
 {
 
-    $data_query = sampling_query($tid,'wastewater_reuse_rate');
+    $data_query = sampling_query($tid, 'wastewater_reuse_rate');
     $category = array(
         0 => array(
             'samplingtime' => array('时间'),
@@ -347,28 +414,29 @@ function wastewater_reuse_rate($tid)
             'reuse_rate' => array('污水再生利用率', '%', 'line'),
         ),
     );
-    $chart_name = ['1','2'];
+    $chart_name = ['1', '2'];
 
     $option = [
         [
             'yAxis_extra' =>
                 '{ type : \'value\' ,
             name : \'  \' ,
-            min : 20,
+            max : 100,
             axisLabel: {
             	formatter : \'{value}  \'
             },
             },',
-            'series_option'=>
+            'series_option' =>
                 [
-                    'chilledwater'=>'stack : \'water\',',
-                    'irrigationwater'=>'stack : \'water\',',
-                    'roadcleanwater'=>'stack : \'water\',',
-                    'reuse_rate'=>'yAxisIndex : 1,',
+                    'chilledwater' => 'stack : \'water\',',
+                    'irrigationwater' => 'stack : \'water\',',
+                    'roadcleanwater' => 'stack : \'water\',',
+                    'reuse_rate' => 'yAxisIndex : 1,',
                 ]
         ]
     ];
-    $data_settings = time_chart2_build($category,$data_query,$chart_name,$option);
+    $data_sets = time_chart2_build($category, $data_query, $chart_name, $option);
+    $data_settings = $data_sets['data_settings'];
     return $data_settings;
 
 }
@@ -724,7 +792,7 @@ function streamflow_control_rate($term)
         {
             symbol :\'rect\',
             symbolSize :1,
-            coord: ['.($add-1).', 20]
+            coord: [' . ($add - 1) . ', 20]
         }
     ],
                 ]
@@ -951,7 +1019,8 @@ function _get_children_tids($tid)
     return $tids;
 }
 
-function time_chart2_build($category,$date_query,$chart_name,$option=array()){
+function time_chart2_build($category, $date_query, $chart_name, $option = array())
+{
     $data_settings = array();
     $data_set = array();
     //数据源分类
@@ -976,17 +1045,22 @@ function time_chart2_build($category,$date_query,$chart_name,$option=array()){
             $i++;
         }
     }
-    if(!empty($option)) {
-        $i = 0;
-        foreach ($data_settings as $key => $value) {
-            @$data_settings[$key]['#option'] = $option[$i];
-            $i++;
-        }
+    if (!empty($option)) {
+        add_option($data_settings,$option);
     }
-    return $data_settings;
+    return array('data_settings' => $data_settings, 'data_set' => $data_set);
 }
 
-function sampling_query($tid,$db){
+function add_option(&$data_settings,$option){
+    $i = 0;
+    foreach ($data_settings as $key => $value) {
+        @$data_settings[$key]['#option'] = $option[$i];
+        $i++;
+    }
+}
+
+function sampling_query($tid, $db)
+{
     $data_query = db_select($db, 'n')
         ->fields('n')
         ->condition('t_id', $tid)
