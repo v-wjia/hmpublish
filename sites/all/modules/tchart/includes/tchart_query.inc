@@ -23,7 +23,7 @@ function get_charts($term)
     $output = '';
     switch ($category) {
         case 'rainwater_utilization':
-            $drupal_settings += rainwater_utilization($tid);
+            $drupal_settings += rainwater_utilization($term);
             break;
         case 'pipe_leakage_rate':
             $drupal_settings += pipe_leakage_rate($tid);
@@ -59,8 +59,9 @@ function get_charts($term)
 /**
  * 雨水资源利用率
  */
-function rainwater_utilization($tid)
+function rainwater_utilization($term)
 {
+    $tid = $term->tid;
     $data_query = sampling_query($tid, 'rainwater_utilization');
     $category = array(
         0 => array(
@@ -77,6 +78,7 @@ function rainwater_utilization($tid)
     $add = count(current($data_settings)['#items']['samplingtime']);
     $option = [
         [
+            'show_zoom' => FALSE,
             'yAxis_extra' =>
                 '{  type : \'value\' ,
                     name : \'  \' ,
@@ -98,7 +100,7 @@ function rainwater_utilization($tid)
                                 [
                                      {
                                           cast:\'不达标:20%\',
-                                         symbol :\'rect\',
+                                          symbol :\'rect\',
                                           symbolSize :1,
                                           coord: [0, 0.2]
                                      },
@@ -127,42 +129,51 @@ function rainwater_utilization($tid)
                 ]
         ]
     ];
+    //添加选项
+    add_option($data_settings, $option);
 
-    add_option($data_settings,$option);
-    return $data_settings;
-
-
-    //雨水资源利用率
-    $query = db_select('rainwater_utilization', 'n');
-    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-    $data = $query->execute();
-
-    $category = array();
-    $municipal_consumption = array();
-    $rainwater_collection_consumption = array();
-    $rainwater_utilization = array();
-    foreach ($data as $entry) {
-        $category[] = date("Y-m-d", strtotime($entry->samplingtime));
-        $municipal_consumption[] = $entry->municipal_consumption / 10000;
-        $rainwater_collection_consumption[] = $entry->rainwater_collection_consumption / 10000;
-        $rainwater_utilization[] = $entry->rainwater_utilization * 100;
+    //表格
+    //需要计算的类目
+    $calculate_category = ['municipal_consumption' => array('市政杂用水量', '万m³'),
+        'rainwater_collection_consumption' => array('雨水收集利用量', '万m³'),] ;
+    //表头
+    $header = array('名称', '区域',  '最大值', '最小值', '平均值');
+    $table_depth = array();
+    //每个类目提取
+    foreach ($calculate_category as $key=>$item) {
+        //每个数据里面寻找需要计算的类目
+        foreach ($data_settings as $_data_settings) {
+            if(!isset($_data_settings['#items'][$key]) || empty($_data_settings['#items'][$key])){
+                continue;
+            }
+            //找到了就开始计算
+            $depth_data = $_data_settings['#items'][$key];
+            $count = 0;
+            $max = $depth_data[0];
+            $min = $max;
+            $total = 0;
+            //最大最小平均值
+            foreach ($depth_data as $each_depth) {
+                if ($max < $each_depth) {
+                    $max = $each_depth;
+                }
+                if ($min > $each_depth) {
+                    $min = $each_depth;
+                }
+                $total += $each_depth;
+                $count++;
+            }
+            //名称:类目名,区域:term name,最大值+单位,最小值+单位,平均值+单位
+            $table_depth[] = array('name' => $item[0], $term->name, 'max' => $max . $item[1], 'min' => $min . $item[1], 'average' => number_format($total / $count, 2,'.','') . $item[1]);
+        }
     }
+    if(empty($table_depth)){
+        return $data_settings;
+    }
+    //生成renderable array
+    $chart_set = ['#theme' => 'tchart_report', '#header' => $header, '#items' => $table_depth];
 
-    $query_data[] = $municipal_consumption;
-    $query_data[] = $rainwater_collection_consumption;
-    $query_data[] = $rainwater_utilization;
-
-    $legend = array('市政杂用水量', '雨水收集利用量', '雨水资源利用率');
-    $series = build_series($query_data, $legend, array(
-        'bar',
-        'bar',
-        'line'
-    ), array(0, 0, 1));
-    $xAxis = build_category_axis($category);
-    $yAxis = build_value_axis(array(array('水量', '万立方米'), array('百分比', '%')));
-    $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
-
-    return $settings;
+    return [$data_settings,$chart_set];
 }
 
 /**
@@ -372,9 +383,9 @@ function pipe_leakage_rate($tid)
                         [
                             {
                                 cast:\'警戒值:12%\',
-                            symbol :\'rect\',
-                            symbolSize :1,
-                            coord: [0, 12]
+                                symbol :\'rect\',
+                                symbolSize :1,
+                                coord: [0, 12]
                             },
                             {
                                 symbol :\'rect\',
@@ -1046,12 +1057,13 @@ function time_chart2_build($category, $date_query, $chart_name, $option = array(
         }
     }
     if (!empty($option)) {
-        add_option($data_settings,$option);
+        add_option($data_settings, $option);
     }
     return array('data_settings' => $data_settings, 'data_set' => $data_set);
 }
 
-function add_option(&$data_settings,$option){
+function add_option(&$data_settings, $option)
+{
     $i = 0;
     foreach ($data_settings as $key => $value) {
         @$data_settings[$key]['#option'] = $option[$i];
