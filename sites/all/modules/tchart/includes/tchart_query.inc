@@ -38,7 +38,7 @@ function get_charts($term)
             $drupal_settings += npsp_data($tid);
             break;
         case 'ecologicalbankline_data':
-            $settings += ecologicalbankline_data($tid);
+            $drupal_settings += ecologicalbankline_data($tid);
             break;
         case 'groundwater_quality':
 //            $output .= groundwater_quality($tid);
@@ -457,6 +457,37 @@ function wastewater_reuse_rate($tid)
  */
 function ecologicalbankline_data($tid)
 {
+    $data_query = sampling_query($tid, 'ecologicalbankline_data');
+    $category = array(
+        0 => array(
+            'samplingtime' => array('时间'),
+            'survival_rate' => array('成活率', '%'),
+            'coverage' => array('盖率', '%'),
+        ),
+        1 => array(
+            'samplingtime' => array('时间'),
+            'bankline_length' => array('岸线长度', 'km'),
+            'species_richness' => array('物种丰富度', 'km'),
+        ),
+    );
+    $chart_name = ['1', '2','3'];
+
+    $option = [
+        [
+            'timespan' => FALSE,
+            'reverse' =>TRUE,
+            'show_zoom' => FALSE,
+        ],
+        [
+            'timespan' => FALSE,
+            'reverse' =>TRUE,
+            'show_zoom' => FALSE,
+        ]
+    ];
+    $data_sets = time_chart2_build_year($category, $data_query, $chart_name, $option);
+    $data_settings = $data_sets['data_settings'];
+    return $data_settings;
+
     $query = db_select('ecologicalbankline_data', 'n');
     $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
     $data = $query->execute();
@@ -1080,4 +1111,66 @@ function sampling_query($tid, $db)
         ->execute();
     return $data_query;
 
+}
+
+function time_chart2_build_year($category, $date_query, $chart_name, $option = array())
+{
+    $data_settings = array();
+    $data_set = array();
+    //数据源分类
+    foreach ($date_query as $item) {
+        $entry = (array)$item;
+        $data_set[] = $entry;
+        unset($entry['t_id']);
+        unset($entry['id']);
+        unset($entry['uploadid']);
+        $i = 1;
+        foreach ($category as $category_1) {
+            //添加theme和title
+            $chart_drupal = '-' . $chart_name[$i];
+            $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
+//            $data_settings[$chart_drupal]['#title'] = $chart_name;
+            $data_settings[$chart_drupal]['#height'] = 270;
+            //添加item
+            if(empty($data_settings[$chart_drupal]['#items']['samplingtime'])) {
+                foreach ($category_1 as $key => $value) {
+                    if($value[0]=='时间'){
+                        continue;
+                    }
+                    $data_settings[$chart_drupal]['#items']['samplingtime'][] = $value[0];
+                }
+            }
+            foreach ($category_1 as $key => $value) {
+                if($key=='samplingtime'){
+                    continue;
+                }
+                $data_settings[$chart_drupal]['#items'][$entry['samplingtime']][] = $entry[$key];
+            }
+
+            $i++;
+        }
+    }
+    reset($category);
+    reset($data_set);
+    $i = 1;
+    foreach ($category as $_category) {
+        reset($data_set);
+        while (next($_category)) {
+            $category_1 = current($_category);
+            if($category_1[0]=='时间'){
+                continue;
+            }
+            $chart_drupal = '-' . $chart_name[$i];
+            $category_1[0]=date('Y年度',strtotime(current($data_set)['samplingtime']));
+            $data_settings[$chart_drupal]['#category'][current($data_set)['samplingtime']] = $category_1;
+            next($data_set);
+        }
+        $i++;
+    }
+
+
+    if (!empty($option)) {
+        add_option($data_settings, $option);
+    }
+    return array('data_settings' => $data_settings, 'data_set' => $data_set);
 }

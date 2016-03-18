@@ -262,6 +262,8 @@ function _chart_option($option)
     $std_option->yAxis_extra = isset($option['yAxis_extra']) ? $option['yAxis_extra'] : "";
     //赋值legend选项
     $std_option->legend_option = isset($option['legend_option']) ? $option['legend_option'] : "";
+    //赋值类目轴选项
+    $std_option->timespan = isset($option['timespan']) ? $option['timespan'] : TRUE;
 
     return $std_option;
 }

@@ -882,7 +882,7 @@ function theme_tchart_time_chart2($variables)
     if (!isset($variables['timespan'])) {
         $timespan = $items['samplingtime'];
         foreach ($timespan as $key => $value) {
-            $timespan[$key] = strtotime($value);
+            $timespan[$key] = $option->timespan?strtotime($value):$value;
         }
         unset($items['sapmlingtime']);
         unset($category['samplingtime']);
@@ -892,7 +892,7 @@ function theme_tchart_time_chart2($variables)
 
     $xAxis_category = '[';
     foreach ($timespan as $_timespan) {
-        $xAxis_category .= "'" . date('Y/m/d', $_timespan) . "',";
+        $xAxis_category .= "'" . ($option->timespan?date('Y/m/d', $_timespan):$_timespan) . "',";
     }
     $xAxis_category .= ']';
 
