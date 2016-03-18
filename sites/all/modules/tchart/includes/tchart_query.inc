@@ -806,7 +806,7 @@ function streamflow_control_rate($term)
         'yAxis_extra' =>
             '{ type : \'value\' ,
             name : \'  \' ,
-            min : 15,
+            min : 0,
             axisLabel: {
             	formatter : \'{value}  \'
             },
