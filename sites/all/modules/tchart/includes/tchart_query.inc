@@ -760,8 +760,11 @@ function streamflow_control_rate($term)
     $category = array(
         0 => array(
             'samplingtime' => array('时间'),
-            'flow' => array('流量', 'm^3/s', 'line'),
-            'rainfall' => array('降雨量', 'mm', 'line'),
+            'flow' => array('流量', 'm^3/s'),
+            'rainfall' => array('降雨量', 'mm'),
+            //折线图
+//            'flow' => array('流量', 'm^3/s', 'line'),
+//            'rainfall' => array('降雨量', 'mm', 'line'),
         ),
         1 => array(
             'samplingtime' => array('时间'),
@@ -801,7 +804,8 @@ function streamflow_control_rate($term)
             $i++;
         }
     }
-    $add = count(current($data_settings)['#items']['samplingtime']);
+    //折线图
+/*    $add = count(current($data_settings)['#items']['samplingtime']);
     $option = [[
         'yAxis_extra' =>
             '{ type : \'value\' ,
@@ -845,6 +849,35 @@ function streamflow_control_rate($term)
                 },',],
         'xAxis_option' => 'boundaryGap : false,',
     ]
+    ];
+    $i = 1;
+    foreach ($data_settings as $key => $value) {
+        @$data_settings[$key]['#option'] = $option[$i - 1];
+        $i++;
+    }*/
+    $option = [[
+        'yAxis_extra' =>
+        '{ type : \'value\' ,
+            name : \'降雨量(mm)\' ,
+            min : 0,
+            axisLabel: {
+            	formatter : \'{value}  \'
+            },
+            },',
+        'series_option' => ['rainfall' => '
+                yAxisIndex:1'],
+        'yAxis_unit' => '流量(m^3/s)'
+    ],
+        ['yAxis_unit' =>'径流控制率(%)'],
+        [
+            'yAxis_extra' =>
+                '{ type : \'value\' ,
+            name : \'削减率(%)\' ,
+            },',
+            'series_option' => ['reduction_rate' => '
+                yAxisIndex:1'],
+            'yAxis_unit' =>'流量(m³)',
+        ],
     ];
     $i = 1;
     foreach ($data_settings as $key => $value) {
