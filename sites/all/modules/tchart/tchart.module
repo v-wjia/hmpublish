@@ -786,7 +786,7 @@ function theme_tchart_time_chart($variables)
     //加载js
     drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
     $output .=
-        '<div id="' . $div_id . '" style="width: 600px;height:400px;"></div>
+        '<div id="' . $div_id . '" style="width: 820px;height:400px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById(\'' . $div_id . '\'));
@@ -814,15 +814,15 @@ function theme_tchart_time_chart($variables)
 			return output;
         }
     },
-    toolbox: {
-        show : true,
-        feature : {
-            mark : {show: true},
-            dataView : {show: true, readOnly: false},
-            restore : {show: true},
-            saveAsImage : {show: true}
-        }
-    },
+//    toolbox: {
+//        show : true,
+//        feature : {
+//            mark : {show: true},
+//            dataView : {show: true, readOnly: false},
+//            restore : {show: true},
+//            saveAsImage : {show: true}
+//        }
+//    },
     dataZoom: {
         show: true,
         start : 0
@@ -943,7 +943,7 @@ function theme_tchart_time_chart2($variables)
     //加载js
     drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
     $output .=
-        '<div id="' . $div_id . '" style="width: 700px;height:' . $height . 'px;"></div>
+        '<div id="' . $div_id . '" style="width: 820px;height:' . $height . 'px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById(\'' . $div_id . '\'));
@@ -956,15 +956,6 @@ function theme_tchart_time_chart2($variables)
     tooltip : {
         trigger: \'axis\',
         formatter : ' . $formatter . '
-    },
-    toolbox: {
-        show : true,
-        feature : {
-            mark : {show: true},
-            dataView : {show: true, readOnly: false},
-            restore : {show: true},
-            saveAsImage : {show: true}
-        }
     },
     ' . ($option->show_zoom ? ('dataZoom: {
         show: true,
@@ -990,9 +981,9 @@ function theme_tchart_time_chart2($variables)
     ' . ($option->reverse ? 'x' : 'y') . 'Axis : [
         {
             type : \'value\' ,
-            name : \'' . '  ' . '\' ,
+            name : \'' . $option->yAxis_unit . '\' ,
             axisLabel: {
-            	formatter : \'{value}' . '  ' . '\'
+            	formatter : \'{value}' . $option->yAxis_per . '\'
             },
             ' . $option->yAxis_option . '
         },

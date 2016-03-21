@@ -264,6 +264,9 @@ function _chart_option($option)
     $std_option->legend_option = isset($option['legend_option']) ? $option['legend_option'] : "";
     //赋值类目轴选项
     $std_option->timespan = isset($option['timespan']) ? $option['timespan'] : TRUE;
-
+    //赋值数值轴单位符号
+    $std_option->yAxis_per = isset($option['yAxis_per']) ? $option['yAxis_per'] : " ";
+    //赋值数值轴单位名称
+    $std_option->yAxis_unit = isset($option['yAxis_unit']) ? $option['yAxis_unit'] : " ";
     return $std_option;
 }
