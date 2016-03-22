@@ -268,5 +268,10 @@ function _chart_option($option)
     $std_option->yAxis_per = isset($option['yAxis_per']) ? $option['yAxis_per'] : " ";
     //赋值数值轴单位名称
     $std_option->yAxis_unit = isset($option['yAxis_unit']) ? $option['yAxis_unit'] : " ";
+    //赋值x轴为类目轴
+    $std_option->x_is_category = isset($option['x_is_category']) ? $option['x_is_category'] : FALSE;
+    //赋值组(多图表联动)
+    $std_option->chart_connect = isset($option['chart_connect']) ? $option['chart_connect'] : 'none_connect';
+
     return $std_option;
 }

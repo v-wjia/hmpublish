@@ -81,25 +81,27 @@ function rainwater_utilization($term)
             'show_zoom' => FALSE,
             'yAxis_extra' =>
                 '{  type : \'value\' ,
-                    name : \'  \' ,
+                    name : \'利用率(%)\' ,
                     min : 0,
                     axisLabel: {
             	        formatter : \'{value}  \'
                     },
                  },',
+            'yAxis_unit' => '水量(万m³)',
             'series_option' =>
                 [
                     'rainwater_utilization' => 'yAxisIndex : 1,
                         markLine:{
-                            lineStyle:{
-                                normal:{
-                                    type:\'solid\',
-                                }
-                            },
                             data : [
                                 [
                                      {
                                           cast:\'不达标:20%\',
+                                          lineStyle:{
+                                            normal:{
+                                            type:\'solid\',
+                                            color:\'#c44\',
+                                            }
+                                          },
                                           symbol :\'rect\',
                                           symbolSize :1,
                                           coord: [0, 0.2]
@@ -108,11 +110,17 @@ function rainwater_utilization($term)
                                           symbol :\'rect\',
                                           symbolSize :1,
                                           coord: [' . ($add - 1) . ', 0.2]
-                                     }
+                                     },
                                 ],
                                 [
                                      {
                                           cast:\'达标:30%\',
+                                          lineStyle:{
+                                            normal:{
+                                            type:\'solid\',
+                                            color:\'#4c4\',
+                                            }
+                                          },
                                           symbol :\'rect\',
                                           symbolSize :1,
                                           coord: [0, 0.3]
@@ -121,12 +129,12 @@ function rainwater_utilization($term)
                                           symbol :\'rect\',
                                           symbolSize :1,
                                           coord: [' . ($add - 1) . ', 0.3]
-                                     }
+                                     },
                                 ],
                             ],
                         },
                     ',
-                ]
+                ],
         ]
     ];
     //添加选项
@@ -177,7 +185,7 @@ function rainwater_utilization($term)
 }
 
 /**
- * 面源污染数据
+ * 城市面源污染数据
  */
 function npsp_data($tid)
 {
@@ -201,6 +209,11 @@ function npsp_data($tid)
         ),
 
     );
+    $option = [
+        [
+            'yAxis_unit' => '削减率(%)',
+        ]
+    ];
 
     $data_set = array();
     //数据源分类
@@ -226,6 +239,7 @@ function npsp_data($tid)
             $i++;
         }
     }
+    add_option($data_settings,$option);
 
     return $data_settings;
 
@@ -285,7 +299,7 @@ function groundwaterlevel($term)
     $chart_set = ['#theme' => 'tchart_report', '#header' => $header, '#items' => $table_depth];
 
     $set = tchart_build_timechart_array($result['legend'], $result['settings'], '', array(
-        'unit' => '深度',
+        'unit' => '地下水埋深(m)',
         'per' => 'm'
     ));
 
@@ -362,14 +376,14 @@ function pipe_leakage_rate($tid)
     $add = count(current($data_settings)['#items']['samplingtime']);
 
     $option = [[
-        'show_zoom' => FALSE,
-        'yAxis_extra' =>
-            '{ type : \'value\' ,
-            name : \'  \' ,
-            max : 100,
-            axisLabel: {
-            	formatter : \'{value}  \'
-            },
+            'show_zoom' => FALSE,
+            'yAxis_extra' =>
+                 '{ type : \'value\' ,
+                 name : \'漏水率(%)\' ,
+                 max : 100,
+                 axisLabel: {
+            	 formatter : \'{value}  \'
+                 },
             },',
         'series_option' => ['pipe_leakage_rate' => '
                 yAxisIndex:1,
@@ -377,12 +391,13 @@ function pipe_leakage_rate($tid)
                     lineStyle:{
                         normal:{
                             type:\'solid\',
+                            color:\'#c44\',
                         }
                     },
                     data : [
                         [
                             {
-                                cast:\'警戒值:12%\',
+                                cast:\'达标线:12%\',
                                 symbol :\'rect\',
                                 symbolSize :1,
                                 coord: [0, 12]
@@ -396,6 +411,7 @@ function pipe_leakage_rate($tid)
                     ],
                 },',
         ],
+        'yAxis_unit' => '水量(万m³)',
     ]
     ];
     $i = 1;
@@ -431,10 +447,10 @@ function wastewater_reuse_rate($tid)
         [
             'yAxis_extra' =>
                 '{ type : \'value\' ,
-            name : \'  \' ,
+            name : \'利用率(%)\' ,
             max : 100,
             axisLabel: {
-            	formatter : \'{value}  \'
+            	formatter : \'{value}%\'
             },
             },',
             'series_option' =>
@@ -443,7 +459,8 @@ function wastewater_reuse_rate($tid)
                     'irrigationwater' => 'stack : \'water\',',
                     'roadcleanwater' => 'stack : \'water\',',
                     'reuse_rate' => 'yAxisIndex : 1,',
-                ]
+                ],
+            'yAxis_unit' => '水量(万m³)',
         ]
     ];
     $data_sets = time_chart2_build($category, $data_query, $chart_name, $option);
@@ -467,7 +484,7 @@ function ecologicalbankline_data($tid)
         1 => array(
             'samplingtime' => array('时间'),
             'bankline_length' => array('岸线长度', 'km'),
-            'species_richness' => array('物种丰富度', 'km'),
+            'species_richness' => array('物种丰富度', '种'),
         ),
     );
     $chart_name = ['1', '2','3'];
@@ -477,56 +494,19 @@ function ecologicalbankline_data($tid)
             'timespan' => FALSE,
             'reverse' =>TRUE,
             'show_zoom' => FALSE,
+            'x_is_category' => TRUE,
         ],
         [
             'timespan' => FALSE,
             'reverse' =>TRUE,
             'show_zoom' => FALSE,
+            'x_is_category' => TRUE,
         ]
     ];
     $data_sets = time_chart2_build_year($category, $data_query, $chart_name, $option);
     $data_settings = $data_sets['data_settings'];
     return $data_settings;
 
-    $query = db_select('ecologicalbankline_data', 'n');
-    $query->fields('n')->condition('t_id', $tid)->orderBy('samplingtime', 'ASC');
-    $data = $query->execute();
-
-    $category = array();
-    $survival_rate = array();
-    $coverage = array();
-    $bankline_length = array();
-    $species_richness = array();
-    $abundance = array();
-    foreach ($data as $entry) {
-        $samplingtime[] = date('Y年', strtotime($entry->samplingtime));
-        $chart_1 [] =
-        $survival_rate[] = $entry->survival_rate;
-        $coverage[] = $entry->coverage;
-        $bankline_length[] = $entry->bankline_length;
-        $species_richness[] = $entry->species_richness;
-        $abundance[] = $entry->abundance;
-    }
-    $category = array('成活率', '盖率');
-    $query_data[] = $survival_rate;
-    $query_data[] = $coverage;
-
-    $legend = $samplingtime;
-    $series = build_series($query_data, $legend, build_type(2, 'bar'));
-    $xAxis = build_value_axis(array(array(' ', ' ')));
-    $yAxis = build_category_axis($category);
-    $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
-
-    unset($query_data);
-    $category = array('岸线长度', '物种丰富度');
-    $query_data[] = $bankline_length;
-    $query_data[] = $species_richness;
-//    $query_data[] = $abundance;
-    $series = build_series($query_data, $legend, build_type(2, 'bar'));
-    $xAxis = build_value_axis(array(array(' ', ' ')));
-    $yAxis = build_category_axis($category);
-    $settings[] = build_settings($series, $legend, $xAxis, $yAxis);
-    return $settings;
 }
 
 
@@ -669,6 +649,7 @@ function waterenviroment_quality($tid)
 
     );
 
+    $option = array();
     $data_set = array();
     //数据源分类
     foreach ($date_query as $item) {
@@ -692,8 +673,13 @@ function waterenviroment_quality($tid)
             }
             $i++;
         }
+        $option[] =
+            [
+                'yAxis_per' => 'mg/L',
+            ];
+        $option[] = [];
     }
-
+    add_option($data_settings,$option);
 
     //计算水质属性
     $category = array();

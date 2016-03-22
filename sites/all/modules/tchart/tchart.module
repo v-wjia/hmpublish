@@ -165,6 +165,9 @@ function tchart_term_form()
  */
 function taxonomy_show($term)
 {
+    //加载js
+    drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
+
     if (variable_get('tchart_term_db_' . $term->tid, 'rainwater_utilization') == 'groundwater_quality') {
         return taxonomy_report($term);
     }
@@ -770,10 +773,6 @@ function theme_tchart_time_chart($variables)
             name: \'' . $item['name'] . '\',
             type: \'' . $item['type'] . '\',
             smooth: true,
-//            showAllSymbol: true,
-//            symbolSize: function (value){
-//                return Math.round(value[2]/10) + 2;
-//            },
             data: (function () {
                 var d = [];
 				' . $data_out . '
@@ -814,15 +813,6 @@ function theme_tchart_time_chart($variables)
 			return output;
         }
     },
-//    toolbox: {
-//        show : true,
-//        feature : {
-//            mark : {show: true},
-//            dataView : {show: true, readOnly: false},
-//            restore : {show: true},
-//            saveAsImage : {show: true}
-//        }
-//    },
     dataZoom: {
         show: true,
         start : 0
@@ -873,7 +863,7 @@ function theme_tchart_time_chart2($variables)
         $div_id = 'auto_chart_' . $tchart_div_id;
         $tchart_div_id++;
     }
-
+    $chart_reference = 'myChart_'.$div_id;
     $option = _chart_option($variables['option']);
 
     $output = '';
@@ -912,8 +902,16 @@ function theme_tchart_time_chart2($variables)
 
         $data_out = '';
         $count_cate = 0;
+        reset($category);
         foreach ($item as $item_key => $one_data) {
-            $data_out .= '[' . ($option->reverse ? $one_data : $count_cate) . ',' . ($option->reverse ? $count_cate : $one_data) . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : " ") . '\'],';
+            //x为非时间类目轴,交替输出单位
+            if($option->x_is_category){
+                $x_unit = current($category);
+                $data_out .= '[' . ($option->reverse ? $one_data : $count_cate) . ',' . ($option->reverse ? $count_cate : $one_data) . ',\'' . (isset($x_unit[1]) ? $x_unit[1] : " ") . '\'],';
+                next($category);
+            }else{
+                $data_out .= '[' . ($option->reverse ? $one_data : $count_cate) . ',' . ($option->reverse ? $count_cate : $one_data) . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : " ") . '\'],';
+            }
             $count_cate++;
         }
 
@@ -940,13 +938,12 @@ function theme_tchart_time_chart2($variables)
 			return output;
         }';
 
-    //加载js
-    drupal_add_js(drupal_get_path('module', 'tchart') . '/echarts.common.min.js');
+
     $output .=
         '<div id="' . $div_id . '" style="width: 820px;height:' . $height . 'px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
-        var myChart = echarts.init(document.getElementById(\'' . $div_id . '\'));
+        '.$chart_reference.' = echarts.init(document.getElementById(\'' . $div_id . '\'));
 
         // 指定图表的配置项和数据
         var option = {
@@ -996,8 +993,12 @@ function theme_tchart_time_chart2($variables)
 
 
         // 使用刚指定的配置项和数据显示图表。
-        myChart.setOption(option);
+        '.$chart_reference.'.setOption(option);
+        '.$chart_reference.'.group = \''.$option->chart_connect.'\';
     </script>';
+    //存储图标关联组
+    global $chart_connect;
+    $chart_connect[$option->chart_connect][] = $chart_reference;
     return $output;
 }
 
