@@ -229,6 +229,10 @@ function taxonomy_show($term)
         );
         $build['conftent'] = $charts['settings'];
     }
+    //多图联动
+    $build['chart_connect'] = array(
+        '#theme' => 'tchart_connect',
+    );
 
     //只显示图片的行为
     if (variable_get('tchart_term_show_photo_' . (string)$term->tid, FALSE)) {
@@ -508,6 +512,9 @@ function tchart_theme($existing, $type, $theme, $path)
                 'image_style' => 'photo_wall',
                 'attributes' => array(),
             ),
+        ),
+        'tchart_connect' => array(
+            'variables' => array(),
         ),
     );
 }
@@ -863,7 +870,7 @@ function theme_tchart_time_chart2($variables)
         $div_id = 'auto_chart_' . $tchart_div_id;
         $tchart_div_id++;
     }
-    $chart_reference = 'myChart_'.$div_id;
+    $chart_reference = 'myChart_' . $div_id;
     $option = _chart_option($variables['option']);
 
     $output = '';
@@ -872,7 +879,7 @@ function theme_tchart_time_chart2($variables)
     if (!isset($variables['timespan'])) {
         $timespan = $items['samplingtime'];
         foreach ($timespan as $key => $value) {
-            $timespan[$key] = $option->timespan?strtotime($value):$value;
+            $timespan[$key] = $option->timespan ? strtotime($value) : $value;
         }
         unset($items['sapmlingtime']);
         unset($category['samplingtime']);
@@ -882,7 +889,7 @@ function theme_tchart_time_chart2($variables)
 
     $xAxis_category = '[';
     foreach ($timespan as $_timespan) {
-        $xAxis_category .= "'" . ($option->timespan?date('Y/m/d', $_timespan):$_timespan) . "',";
+        $xAxis_category .= "'" . ($option->timespan ? date('Y/m/d', $_timespan) : $_timespan) . "',";
     }
     $xAxis_category .= ']';
 
@@ -905,11 +912,11 @@ function theme_tchart_time_chart2($variables)
         reset($category);
         foreach ($item as $item_key => $one_data) {
             //x为非时间类目轴,交替输出单位
-            if($option->x_is_category){
+            if ($option->x_is_category) {
                 $x_unit = current($category);
                 $data_out .= '[' . ($option->reverse ? $one_data : $count_cate) . ',' . ($option->reverse ? $count_cate : $one_data) . ',\'' . (isset($x_unit[1]) ? $x_unit[1] : " ") . '\'],';
                 next($category);
-            }else{
+            } else {
                 $data_out .= '[' . ($option->reverse ? $one_data : $count_cate) . ',' . ($option->reverse ? $count_cate : $one_data) . ',\'' . (isset($category[$key][1]) ? $category[$key][1] : " ") . '\'],';
             }
             $count_cate++;
@@ -943,7 +950,7 @@ function theme_tchart_time_chart2($variables)
         '<div id="' . $div_id . '" style="width: 820px;height:' . $height . 'px;"></div>
     <script type="text/javascript">
         // 基于准备好的dom，初始化echarts实例
-        '.$chart_reference.' = echarts.init(document.getElementById(\'' . $div_id . '\'));
+        ' . $chart_reference . ' = echarts.init(document.getElementById(\'' . $div_id . '\'));
 
         // 指定图表的配置项和数据
         var option = {
@@ -993,13 +1000,21 @@ function theme_tchart_time_chart2($variables)
 
 
         // 使用刚指定的配置项和数据显示图表。
-        '.$chart_reference.'.setOption(option);
-        '.$chart_reference.'.group = \''.$option->chart_connect.'\';
+        ' . $chart_reference . '.setOption(option);
+        ' . $chart_reference . '.group = \'' . $option->chart_connect . '\';
     </script>';
     //存储图标关联组
-    global $chart_connect;
-    $chart_connect[$option->chart_connect][] = $chart_reference;
+    if ($option->chart_connect != 'none_connect') {
+        global $chart_connect;
+        $chart_connect[$option->chart_connect][] = $chart_reference;
+    }
     return $output;
+}
+
+//多图联动补完js
+function theme_tchart_connect($variables)
+{
+    return _get_chart_connect();
 }
 
 /**
@@ -1085,6 +1100,7 @@ function theme_tchart_photo_wall($variables)
 
 }
 
+
 function tchart_page_build()
 {
     drupal_add_css(drupal_get_path('module', 'tchart') . '/css/tchart.css', array(
@@ -1092,3 +1108,4 @@ function tchart_page_build()
         'every_page' => TRUE
     ));
 }
+

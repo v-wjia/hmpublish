@@ -240,6 +240,20 @@ function _get_check($items, $active)
     return $check;
 }
 
+//获得联动的组
+function _get_chart_connect(){
+    global $chart_connect;
+    $output = '';
+    if(!empty($chart_connect)) {
+        $output.='<script type="text/javascript">';
+        foreach ($chart_connect as $group => $chart) {
+            $output .= "echarts.connect('$group');";
+        }
+        $output.='</script>';
+    }
+    return $output;
+}
+
 /**
  * 获得选项
  */
