@@ -676,8 +676,9 @@ function waterenviroment_quality($tid)
         $option[] =
             [
                 'yAxis_per' => 'mg/L',
+                'chart_connect' => 'group1',
             ];
-        $option[] = [];
+        $option[] = ['chart_connect' => 'group1',];
     }
     add_option($data_settings,$option);
 
@@ -723,7 +724,15 @@ function waterenviroment_quality($tid)
             }
         }
     }
+    $ordered_option = [
+        [
+            'chart_connect' => 'group1',
+        ]
+    ];
     $items['#items'] = $ordered_items;
+    //每个数据需要在一个数组中才能使用add_option方法
+    $items = array($items);
+    add_option($items,$ordered_option);
     return array($data_settings, $items);
 
 
