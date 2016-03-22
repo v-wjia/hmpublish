@@ -861,9 +861,13 @@ function streamflow_control_rate($term)
             },',
         'series_option' => ['rainfall' => '
                 yAxisIndex:1'],
-        'yAxis_unit' => '流量(m^3/s)'
+        'yAxis_unit' => '流量(m^3/s)',
+        'chart_connect' => 'group1',
     ],
-        ['yAxis_unit' =>'径流控制率(%)'],
+        [
+            'yAxis_unit' =>'径流控制率(%)',
+            'chart_connect' => 'group1',
+        ],
         [
             'yAxis_extra' =>
                 '{ type : \'value\' ,
@@ -872,6 +876,7 @@ function streamflow_control_rate($term)
             'series_option' => ['reduction_rate' => '
                 yAxisIndex:1'],
             'yAxis_unit' =>'流量(m³)',
+            'chart_connect' => 'group1',
         ],
     ];
     $i = 1;
