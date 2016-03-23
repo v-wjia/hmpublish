@@ -83,6 +83,7 @@ function rainwater_utilization($term)
                 '{  type : \'value\' ,
                     name : \'利用率(%)\' ,
                     min : 0,
+                    max : 100,
                     axisLabel: {
             	        formatter : \'{value}  \'
                     },
@@ -104,12 +105,12 @@ function rainwater_utilization($term)
                                           },
                                           symbol :\'rect\',
                                           symbolSize :1,
-                                          coord: [0, 0.2]
+                                          coord: [0, 20]
                                      },
                                      {
                                           symbol :\'rect\',
                                           symbolSize :1,
-                                          coord: [' . ($add - 1) . ', 0.2]
+                                          coord: [' . ($add - 1) . ', 20]
                                      },
                                 ],
                                 [
@@ -123,12 +124,12 @@ function rainwater_utilization($term)
                                           },
                                           symbol :\'rect\',
                                           symbolSize :1,
-                                          coord: [0, 0.3]
+                                          coord: [0, 30]
                                      },
                                      {
                                           symbol :\'rect\',
                                           symbolSize :1,
-                                          coord: [' . ($add - 1) . ', 0.3]
+                                          coord: [' . ($add - 1) . ', 30]
                                      },
                                 ],
                             ],
