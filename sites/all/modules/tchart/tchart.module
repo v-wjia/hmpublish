@@ -513,6 +513,12 @@ function tchart_theme($existing, $type, $theme, $path)
                 'attributes' => array(),
             ),
         ),
+        'tchart_video_report' => array(
+            'variables' => array(
+                'video' => array(),
+                'form' => array(),
+            ),
+        ),
         'tchart_connect' => array(
             'variables' => array(),
         ),
@@ -740,6 +746,47 @@ function theme_tchart_report($variables)
 
 }
 
+//视频表格样式
+function theme_tchart_video_report($variables)
+{
+    $video = $variables['video'];
+    $form = $variables['form'];
+    $output = '';
+    $v_id = 0;
+    foreach ($video as $_video) {
+        $output .= "<video src=\"$_video\" width=\"800\" height=\"400\" class=\"video\" id=\"flood_video_$v_id\"controls=\"controls\" poster=\"/sites/all/themes/khtheme/img/bg.jpg\" style=\"display: none\"></video>";
+        $v_id++;
+    }
+    $f_id = 0;
+    foreach ($form['#items'] as &$item) {
+        $item[0] = date('Y/m/d',strtotime($item[0]));
+        $item[0] = "<button class =\"btn_time\" id=\"flood_video_$f_id\" >$item[0]</button>";
+        $f_id++;
+    }
+
+    $output .= render($form);
+
+    if ($v_id > 0) {
+        $output .= "
+        <script>
+            jQuery(document).ready(function(){
+                jQuery(\"#flood_video_0\").show();
+                jQuery(\".btn_time\").click(function () {
+                    jQuery(\".video\").each(function() {
+                       jQuery(this).hide();
+                    });
+                    var id = jQuery(this).attr(\"id\");
+                    jQuery(\".video\").each(function() {
+                        if(jQuery(this).attr(\"id\") == id){
+                            jQuery(this).show();
+                        }
+                    });
+                });
+            });
+        </script>";
+    }
+    return $output;
+}
 
 /**
  * 时间轴图标样式
