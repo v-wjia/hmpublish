@@ -774,6 +774,7 @@ function theme_tchart_video_report($variables)
                 jQuery(\".btn_time\").click(function () {
                     jQuery(\".video\").each(function() {
                        jQuery(this).hide();
+                       jQuery(this).trigger('pause');
                     });
                     var id = jQuery(this).attr(\"id\");
                     jQuery(\".video\").each(function() {
