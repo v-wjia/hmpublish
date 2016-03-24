@@ -49,6 +49,9 @@ function get_charts($term)
         case 'streamflow_control_rate':
             $drupal_settings += streamflow_control_rate($term);
             break;
+        case 'stormflood':
+            $drupal_settings += stormflood($term->tid);
+            break;
     }
     if (!empty($settings)) {
         $output = render_echarts(array('echart' => $settings)) . $output;
@@ -144,15 +147,15 @@ function rainwater_utilization($term)
     //表格
     //需要计算的类目
     $calculate_category = ['municipal_consumption' => array('市政杂用水量', '万m³'),
-        'rainwater_collection_consumption' => array('雨水收集利用量', '万m³'),] ;
+        'rainwater_collection_consumption' => array('雨水收集利用量', '万m³'),];
     //表头
-    $header = array('名称', '区域',  '最大值', '最小值', '平均值');
+    $header = array('名称', '区域', '最大值', '最小值', '平均值');
     $table_depth = array();
     //每个类目提取
-    foreach ($calculate_category as $key=>$item) {
+    foreach ($calculate_category as $key => $item) {
         //每个数据里面寻找需要计算的类目
         foreach ($data_settings as $_data_settings) {
-            if(!isset($_data_settings['#items'][$key]) || empty($_data_settings['#items'][$key])){
+            if (!isset($_data_settings['#items'][$key]) || empty($_data_settings['#items'][$key])) {
                 continue;
             }
             //找到了就开始计算
@@ -173,16 +176,16 @@ function rainwater_utilization($term)
                 $count++;
             }
             //名称:类目名,区域:term name,最大值+单位,最小值+单位,平均值+单位
-            $table_depth[] = array('name' => $item[0], $term->name, 'max' => $max . $item[1], 'min' => $min . $item[1], 'average' => number_format($total / $count, 2,'.','') . $item[1]);
+            $table_depth[] = array('name' => $item[0], $term->name, 'max' => $max . $item[1], 'min' => $min . $item[1], 'average' => number_format($total / $count, 2, '.', '') . $item[1]);
         }
     }
-    if(empty($table_depth)){
+    if (empty($table_depth)) {
         return $data_settings;
     }
     //生成renderable array
     $chart_set = ['#theme' => 'tchart_report', '#header' => $header, '#items' => $table_depth];
 
-    return [$data_settings,$chart_set];
+    return [$data_settings, $chart_set];
 }
 
 /**
@@ -240,7 +243,7 @@ function npsp_data($tid)
             $i++;
         }
     }
-    add_option($data_settings,$option);
+    add_option($data_settings, $option);
 
     return $data_settings;
 
@@ -377,9 +380,9 @@ function pipe_leakage_rate($tid)
     $add = count(current($data_settings)['#items']['samplingtime']);
 
     $option = [[
-            'show_zoom' => FALSE,
-            'yAxis_extra' =>
-                 '{ type : \'value\' ,
+        'show_zoom' => FALSE,
+        'yAxis_extra' =>
+            '{ type : \'value\' ,
                  name : \'漏水率(%)\' ,
                  max : 100,
                  axisLabel: {
@@ -488,18 +491,18 @@ function ecologicalbankline_data($tid)
             'species_richness' => array('物种丰富度', '种'),
         ),
     );
-    $chart_name = ['1', '2','3'];
+    $chart_name = ['1', '2', '3'];
 
     $option = [
         [
             'timespan' => FALSE,
-            'reverse' =>TRUE,
+            'reverse' => TRUE,
             'show_zoom' => FALSE,
             'x_is_category' => TRUE,
         ],
         [
             'timespan' => FALSE,
-            'reverse' =>TRUE,
+            'reverse' => TRUE,
             'show_zoom' => FALSE,
             'x_is_category' => TRUE,
         ]
@@ -681,7 +684,7 @@ function waterenviroment_quality($tid)
             ];
         $option[] = ['chart_connect' => 'group1',];
     }
-    add_option($data_settings,$option);
+    add_option($data_settings, $option);
 
     //计算水质属性
     $category = array();
@@ -733,7 +736,7 @@ function waterenviroment_quality($tid)
     $items['#items'] = $ordered_items;
     //每个数据需要在一个数组中才能使用add_option方法
     $items = array($items);
-    add_option($items,$ordered_option);
+    add_option($items, $ordered_option);
     return array($data_settings, $items);
 
 
@@ -801,59 +804,59 @@ function streamflow_control_rate($term)
         }
     }
     //折线图
-/*    $add = count(current($data_settings)['#items']['samplingtime']);
+    /*    $add = count(current($data_settings)['#items']['samplingtime']);
+        $option = [[
+            'yAxis_extra' =>
+                '{ type : \'value\' ,
+                name : \'  \' ,
+                min : 0,
+                axisLabel: {
+                    formatter : \'{value}  \'
+                },
+                inverse:true,
+                },',
+            'series_option' => ['rainfall' => '
+                    yAxisIndex:1,
+                    areaStyle: {
+                        normal: {}
+                    },
+                    markLine:{
+                    lineStyle:{
+                        normal:{
+                            type:\'solid\',
+                            }
+                    },
+                    data : [
+        [
+            {
+                cast:\'平均值:20\',
+                symbol :\'rect\',
+                symbolSize :1,
+                coord: [0, 20]
+            },
+            {
+                symbol :\'rect\',
+                symbolSize :1,
+                coord: [' . ($add - 1) . ', 20]
+            }
+        ],
+                    ]
+                    },',
+                'flow' => '
+                    areaStyle: {
+                        normal: {}
+                    },',],
+            'xAxis_option' => 'boundaryGap : false,',
+        ]
+        ];
+        $i = 1;
+        foreach ($data_settings as $key => $value) {
+            @$data_settings[$key]['#option'] = $option[$i - 1];
+            $i++;
+        }*/
     $option = [[
         'yAxis_extra' =>
             '{ type : \'value\' ,
-            name : \'  \' ,
-            min : 0,
-            axisLabel: {
-            	formatter : \'{value}  \'
-            },
-            inverse:true,
-            },',
-        'series_option' => ['rainfall' => '
-                yAxisIndex:1,
-                areaStyle: {
-                    normal: {}
-                },
-                markLine:{
-                lineStyle:{
-                    normal:{
-                        type:\'solid\',
-                        }
-                },
-                data : [
-    [
-        {
-            cast:\'平均值:20\',
-            symbol :\'rect\',
-            symbolSize :1,
-            coord: [0, 20]
-        },
-        {
-            symbol :\'rect\',
-            symbolSize :1,
-            coord: [' . ($add - 1) . ', 20]
-        }
-    ],
-                ]
-                },',
-            'flow' => '
-                areaStyle: {
-                    normal: {}
-                },',],
-        'xAxis_option' => 'boundaryGap : false,',
-    ]
-    ];
-    $i = 1;
-    foreach ($data_settings as $key => $value) {
-        @$data_settings[$key]['#option'] = $option[$i - 1];
-        $i++;
-    }*/
-    $option = [[
-        'yAxis_extra' =>
-        '{ type : \'value\' ,
             name : \'降雨量(mm)\' ,
             min : 0,
             axisLabel: {
@@ -866,7 +869,7 @@ function streamflow_control_rate($term)
         'chart_connect' => 'group1',
     ],
         [
-            'yAxis_unit' =>'径流控制率(%)',
+            'yAxis_unit' => '径流控制率(%)',
             'chart_connect' => 'group1',
         ],
         [
@@ -876,7 +879,7 @@ function streamflow_control_rate($term)
             },',
             'series_option' => ['reduction_rate' => '
                 yAxisIndex:1'],
-            'yAxis_unit' =>'流量(m³)',
+            'yAxis_unit' => '流量(m³)',
             'chart_connect' => 'group1',
         ],
     ];
@@ -886,6 +889,38 @@ function streamflow_control_rate($term)
         $i++;
     }
     return $data_settings;
+}
+
+//城市暴雨内涝防治
+function stormflood($tid)
+{
+
+    $header = array('降雨场次', '降雨强度', '降雨量', '持续时间', '降雨峰值');
+    $items = array();
+    $video = array();
+
+    $query = db_select('stormflood', 'n')
+        ->fields('n')
+        ->range(0, 6)
+        ->orderBy('samplingtime', "DESC");
+    $query->condition('t_id', $tid);
+
+
+    $result = $query->execute();
+
+    foreach ($result as $item) {
+        $items[] = array(
+            $item->samplingtime,
+            $item->rainfall_intensity,
+            $item->rainfall . 'mm',
+            $item->duration . '小时',
+            $item->peakvalue . 'mm/h'
+        );
+        $video[] = $item->url;
+    }
+
+    return array('#theme' => 'tchart_video_report', '#video' => $video, '#form' => array('#theme' => 'tchart_report', '#header' => $header, '#items' => $items));
+
 }
 
 function build_settings($series, $legend, $xAxis, $yAxis, $containerId = -1)
@@ -1166,16 +1201,16 @@ function time_chart2_build_year($category, $date_query, $chart_name, $option = a
 //            $data_settings[$chart_drupal]['#title'] = $chart_name;
             $data_settings[$chart_drupal]['#height'] = 270;
             //添加item
-            if(empty($data_settings[$chart_drupal]['#items']['samplingtime'])) {
+            if (empty($data_settings[$chart_drupal]['#items']['samplingtime'])) {
                 foreach ($category_1 as $key => $value) {
-                    if($value[0]=='时间'){
+                    if ($value[0] == '时间') {
                         continue;
                     }
                     $data_settings[$chart_drupal]['#items']['samplingtime'][] = $value[0];
                 }
             }
             foreach ($category_1 as $key => $value) {
-                if($key=='samplingtime'){
+                if ($key == 'samplingtime') {
                     continue;
                 }
                 $data_settings[$chart_drupal]['#items'][$entry['samplingtime']][] = $entry[$key];
@@ -1191,11 +1226,11 @@ function time_chart2_build_year($category, $date_query, $chart_name, $option = a
         reset($data_set);
         while (next($_category)) {
             $category_1 = current($_category);
-            if($category_1[0]=='时间'){
+            if ($category_1[0] == '时间') {
                 continue;
             }
             $chart_drupal = '-' . $chart_name[$i];
-            $category_1[0]=date('Y年度',strtotime(current($data_set)['samplingtime']));
+            $category_1[0] = date('Y年度', strtotime(current($data_set)['samplingtime']));
             $data_settings[$chart_drupal]['#category'][current($data_set)['samplingtime']] = $category_1;
             next($data_set);
         }
