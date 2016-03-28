@@ -759,7 +759,7 @@ function streamflow_control_rate($term)
     $category = array(
         0 => array(
             'samplingtime' => array('时间'),
-            'flow' => array('流量', 'm^3/s'),
+            'flow' => array('流量', 'm³/s'),
             'rainfall' => array('降雨量', 'mm'),
             //折线图
 //            'flow' => array('流量', 'm^3/s', 'line'),
@@ -862,10 +862,12 @@ function streamflow_control_rate($term)
             axisLabel: {
             	formatter : \'{value}  \'
             },
+            nameLocation : \'start\',
+            inverse:true,
             },',
         'series_option' => ['rainfall' => '
                 yAxisIndex:1'],
-        'yAxis_unit' => '流量(m^3/s)',
+        'yAxis_unit' => '流量(m³/s)',
         'chart_connect' => 'group1',
     ],
         [
