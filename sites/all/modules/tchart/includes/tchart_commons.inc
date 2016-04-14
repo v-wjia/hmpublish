@@ -254,6 +254,12 @@ function _get_chart_connect(){
     return $output;
 }
 
+function startsWith($haystack, $needle)
+{
+    $length = mb_strlen($needle);
+    return (mb_substr($haystack, 0, $length) === $needle);
+}
+
 /**
  * 获得选项
  */

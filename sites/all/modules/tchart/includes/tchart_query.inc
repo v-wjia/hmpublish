@@ -16,11 +16,14 @@ function get_charts($term)
 
 //	print_r(_get_children_tids($term->tid));
 
-    taxonomy_get_children($term->tid);
+    $output = '';
+
+//    taxonomy_get_children($term->tid);
     $settings = array();
     $drupal_settings = array();
     $tid = $term->tid;
-    $output = '';
+
+
     switch ($category) {
         case 'rainwater_utilization':
             $drupal_settings += rainwater_utilization($term);
@@ -56,6 +59,12 @@ function get_charts($term)
     if (!empty($settings)) {
         $output = render_echarts(array('echart' => $settings)) . $output;
     }
+
+    //调用js代码
+    if(startsWith($category,'#js_')){
+        $output = js_chart(mb_substr($category,4,mb_strlen($category)),$tid);
+    }
+
     return array('output' => $output, 'settings' => $drupal_settings);
 }
 
@@ -74,7 +83,7 @@ function rainwater_utilization($term)
             'rainwater_utilization' => array('雨水资源利用率', ' ', 'line'),
         ),
     );
-    $chart_name = ['1', '2'];
+    $chart_name = ['1'];
 
     $data_sets = time_chart2_build($category, $data_query, $chart_name);
     $data_settings = $data_sets['data_settings'];
@@ -194,14 +203,13 @@ function rainwater_utilization($term)
 function npsp_data($tid)
 {
     $data_settings = array();
-    $date_query = db_select('npsp_data', 'n')
+    $data_query = db_select('npsp_data', 'n')
         ->fields('n')
         ->condition('t_id', $tid)
         ->orderBy('samplingtime', 'ASE')
         ->execute();
 
     //一类参数
-    //可重构:后台设置
     $category = array(
         0 => array(
             'samplingtime' => array('时间'),
@@ -218,33 +226,9 @@ function npsp_data($tid)
             'yAxis_unit' => '削减率(%)',
         ]
     ];
-
-    $data_set = array();
+    $chart_name = ['npsp_data'];
     //数据源分类
-    foreach ($date_query as $item) {
-        $entry = (array)$item;
-        $data_set[] = $entry;
-        unset($entry['t_id']);
-        unset($entry['id']);
-        unset($entry['uploadid']);
-        $i = 1;
-        foreach ($category as $category_1) {
-            //添加theme和title
-            $chart_name = taxonomy_term_load($item->t_id)->name;
-            $chart_drupal = '-' . $chart_name;
-            $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
-            $data_settings[$chart_drupal]['#title'] = $chart_name;
-            $data_settings[$chart_drupal]['#category'] = $category_1;
-            $data_settings[$chart_drupal]['#height'] = 270;
-            //添加item
-            foreach ($category_1 as $key => $value) {
-                $data_settings[$chart_drupal]['#items'][$key][] = $entry[$key];
-            }
-            $i++;
-        }
-    }
-    add_option($data_settings, $option);
-
+    $data_settings = time_chart2_build($category,$data_query,$chart_name,$option)['data_settings'];
     return $data_settings;
 
 }
@@ -256,7 +240,7 @@ function groundwaterlevel($term)
 {
     $tid = $term->tid;
     if (variable_get('tchart_show_depth_' . $tid, FALSE)) {
-        //添加:获取深度选项
+        //TODO:获取深度选项
 
     }
 
@@ -520,6 +504,30 @@ function ecologicalbankline_data($tid)
 function groundwater_quality($tid, $date = '')
 {
     $output = '';
+    //字段
+    $field = array(
+        'PH' => 'PH值',
+        'totalhardness' => '总硬度',
+        'CODMn' => '高锰酸盐指数',
+        'NH3_N' => '氨氮',
+        'chloride' => '氯化物',
+        'nitrate' => '硝酸盐',
+        'fluoride' => '氟化物',
+        'FE' => '铁',
+        'Ecoil' => '总大肠杆菌'
+    );
+    //达标值
+    $reference = array(
+        'PH' => '7',
+        'totalhardness' => '8',
+        'CODMn' => '12',
+        'NH3_N' => '33',
+        'chloride' => '44',
+        'nitrate' => '32',
+        'fluoride' => '12',
+        'FE' => '6',
+        'Ecoil' => '63'
+    );
     //取出第一个日期
     if ($date == '') {
         $date_query = db_select('groundwater_quality', 'n')
@@ -538,6 +546,7 @@ function groundwater_quality($tid, $date = '')
     if (empty($date)) {
         $date = time();
     }
+    //第一行（字段名）
     $header = array('监测点', '测定指标', '测定值', '参考值', '是否达标');
     $items = array();
     $date_table = array();
@@ -556,32 +565,11 @@ function groundwater_quality($tid, $date = '')
     $result = $query->condition('samplingtime', date('Y-m-d H:i:s', $date))
         ->execute();
 
-    $field = array(
-        'PH' => 'PH值',
-        'totalhardness' => '总硬度',
-        'CODMn' => '高锰酸盐指数',
-        'NH3_N' => '氨氮',
-        'chloride' => '氯化物',
-        'nitrate' => '硝酸盐',
-        'fluoride' => '氟化物',
-        'FE' => '铁',
-        'Ecoil' => '总大肠杆菌'
-    );
-    $reference = array(
-        'PH' => '7',
-        'totalhardness' => '8',
-        'CODMn' => '12',
-        'NH3_N' => '33',
-        'chloride' => '44',
-        'nitrate' => '32',
-        'fluoride' => '12',
-        'FE' => '6',
-        'Ecoil' => '63'
-    );
     foreach ($result as $item) {
         @$result_item = (array)$item;
         foreach ($result_item as $key => $value) {
             if (array_key_exists($key, $field)) {
+                //TODO: 添加达标判断.$value为当前值, $reference[$key]为对应参考值
                 $items[] = build_grounderwater_array($result_item['equipment'], $field[$key], $value, $reference[$key], '达标');
             }
         }
@@ -630,7 +618,6 @@ function waterenviroment_quality($tid)
         ->execute();
 
     //三类参数
-    //可重构:后台设置
     $category = array(
         0 => array(
             'samplingtime' => array('时间'),
@@ -909,7 +896,7 @@ function stormflood($tid)
 
 
     $result = $query->execute();
-
+    //读取每个降雨的场次信息
     foreach ($result as $item) {
         $items[] = array(
             $item->samplingtime,
@@ -1143,12 +1130,13 @@ function time_chart2_build($category, $date_query, $chart_name, $option = array(
         unset($entry['t_id']);
         unset($entry['id']);
         unset($entry['uploadid']);
-        $i = 1;
+        $i = 0;
         foreach ($category as $category_1) {
             //添加theme和title
-            $chart_drupal = '-' . $chart_name[$i];
+            $chart_drupal = '-' . $i;
+            $chart_drupal .= $chart_name[$i];
             $data_settings[$chart_drupal]['#theme'] = 'tchart_time_chart2';
-//            $data_settings[$chart_drupal]['#title'] = $chart_name;
+//            $data_settings[$chart_drupal]['#title'] = $chart_name[$i];
             $data_settings[$chart_drupal]['#category'] = $category_1;
             $data_settings[$chart_drupal]['#height'] = 270;
             //添加item
@@ -1244,4 +1232,19 @@ function time_chart2_build_year($category, $date_query, $chart_name, $option = a
         add_option($data_settings, $option);
     }
     return array('data_settings' => $data_settings, 'data_set' => $data_set);
+}
+
+/**
+ * 通过js创建图表
+ */
+function js_chart($db_name, $tid){
+    $query = sampling_query($tid, $db_name);
+    $items = array();
+    foreach ($query as $item) {
+        $items[] = (array)$item;
+    }
+    drupal_add_js(drupal_get_path('module', 'tchart') . '/js/jscharts.js');
+    drupal_add_js(array('tchart_query' => $items, 'tchart_db' => $db_name), array('type' => 'setting'));
+    return '<div id="js_tchart" style="width: 820px;height:auto ;"></div>';
+    
 }
