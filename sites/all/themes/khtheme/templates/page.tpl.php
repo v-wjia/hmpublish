@@ -132,7 +132,8 @@
   <?php endif; ?>
 
 
-    <div id="content" class="column"><div class="section">
+    <div id="content" class="column" style="width: 100%;">
+        <div class="section">
 
       <a id="main-content"></a>
       <?php print render($title_prefix); ?>
@@ -156,7 +157,8 @@
       <?php print render($page['content']); ?>
       <?php print $feed_icons; ?>
 
-    </div></div> <!-- /.section, /#content -->
+        </div>
+    </div> <!-- /.section, /#content -->
 
     <?php if ($page['sidebar_second']): ?>
       <div id="sidebar-second" class="column sidebar"><div class="section">

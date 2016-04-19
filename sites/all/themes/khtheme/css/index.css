@@ -468,3 +468,29 @@ body{
 #block-system-main-menu .content ul > li a.active{
     color: #7c7c7c;
 }
+
+#content .content{
+    background:#fff;
+}
+#content .content h2{
+    border-bottom: 1px solid #ccc;
+    line-height: 250%;
+    padding: 0 20px;
+    color: #999!important;
+    font-size: 13px;
+}
+#content .content h2 a{
+    color: #999;
+}
+#content .content h2 a:hover{
+    color: #666;
+    text-decoration: underline;
+}
+
+.region-content{
+    margin-top: 20px;
+}
+.btn_time{
+    height: 30px;
+    line-height: 30px;
+}

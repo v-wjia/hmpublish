@@ -216,7 +216,7 @@
         <li>产业化<img src="<?php echo $site_path; ?>img/dg.png"></li>
         <li style="border-bottom:0">连片示范效应<img src="/<?php echo drupal_get_path('theme','khtheme');?>/img/dg.png"></li>
       </ul>
-      <img src="<?php echo $site_path; ?>img/chart.jpg" alt="" style="display:block;margin:30px auto 43px;">
+      <img src="<?php echo $site_path; ?>img/chart.png" alt="" style="display:block;margin:30px auto 43px;">
     </div>
   </div>
 
