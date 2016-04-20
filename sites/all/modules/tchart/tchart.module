@@ -363,7 +363,7 @@ function tchart_block_view($delta = '')
                 $depth = 3;
                 global $tchart_cache_content;
 //                print_r($tchart_cache_content['items']);
-                watchdog('test', '='.$tchart_cache_content['items'].'=');
+//                watchdog('test', '='.$tchart_cache_content['items'].'=');
                 //unset term except #4
                 if(!empty($tchart_cache_content['items'][3]) && is_array($tchart_cache_content['items'][3])) {
                     foreach ($tchart_cache_content['items'][3] as $k => $v) {
@@ -373,7 +373,7 @@ function tchart_block_view($delta = '')
                                     foreach($val as $kk => $value) {
                                         if(array_key_exists('title', $val)) {
                                             // if title contains 区域 and it's 4# then keeps it.
-                                            watchdog('test', '='.strpos($val['title'], "区域").'=');
+//                                            watchdog('test', '='.strpos($val['title'], "区域").'=');
                                             if (($val['title'] != "4#区域") && (strpos($val['title'], "区域") > 0) ) {
                                                 unset($tchart_cache_content['items'][3][$k]);
                                                 continue;
