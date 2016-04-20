@@ -362,6 +362,26 @@ function tchart_block_view($delta = '')
             if (user_access('access content')) {
                 $depth = 3;
                 global $tchart_cache_content;
+//                print_r($tchart_cache_content['items']);
+                //unset term except #4
+                if(!empty($tchart_cache_content['items'][3]) && is_array($tchart_cache_content['items'][3])) {
+                    foreach ($tchart_cache_content['items'][3] as $k => $v) {
+                        if(!empty($v) && is_array($v['data'])) {
+                            foreach ($v as $key => $val) {
+                                if(!empty($val) && is_array($val)) {
+                                    foreach($val as $kk => $value) {
+                                        if(array_key_exists('title', $val)) {
+                                            if (($val['title'] != "4#区域") && (strpos("4#区域", $val['title']) > 0) ) {
+                                                unset($tchart_cache_content['items'][3][$k]);
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                }                               
+                            }
+                        }
+                    }
+                }
 
                 if (!isset($tchart_cache_content)) {
                     tchart_get_block_content($tid, $depth);
