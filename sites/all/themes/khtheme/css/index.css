@@ -254,6 +254,12 @@ body{
 .navtable table tr td a{
     color:#fff;
 }
+
+.navtable table tr{
+    height: 20px;
+    line-height: 20px; 
+}
+
 .navtable table tr td.active{
     background: #eee!important;
 }
