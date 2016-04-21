@@ -255,7 +255,7 @@ body{
     color:#fff;
 }
 .navtable table tr td.active{
-    background: #eee;
+    background: #eee!important;
 }
 .navtable table tr td.active a {
     color:#666;
