@@ -244,9 +244,16 @@ body{
 	background: #E8E8E8;
 	font-weight: bold;
 	color: #686868;
-	font-size: 14px;
+	font-size: 12px;
+}
+td .active {
+    color:#666;
 }
 
+.navtable table tr{
+	background-color: #8694B1;
+	color:#fff;
+}
 
 /* 水生态 start */
 .sk-wrapper{
