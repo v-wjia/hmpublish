@@ -248,8 +248,8 @@ body{
 }
 
 
-.navtable table tr{
-	background-color: #8694B1;
+.navtable table tr td{
+	background: #8694B1!important;
 	color:#fff;
 }
 
