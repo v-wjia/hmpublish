@@ -256,12 +256,12 @@ body{
 }
 
 .navtable table tr{
-    height: 20px;
-    line-height: 20px; 
+    height: 28px!important;
+    line-height: 28px!important; 
 }
 
 .navtable table tr td.active{
-    background: #eee!important;
+    background: #e8e8e8!important;
 }
 .navtable tbody {
     border-top: 0;
