@@ -246,13 +246,15 @@ body{
 	color: #686868;
 	font-size: 12px;
 }
-td .active {
-    color:#666;
-}
 
-.navtable table tr{
+
+.data-table navtable table tr{
 	background-color: #8694B1;
 	color:#fff;
+}
+
+.data-table navtable table tr td.active {
+    color:#666;
 }
 
 /* 水生态 start */
