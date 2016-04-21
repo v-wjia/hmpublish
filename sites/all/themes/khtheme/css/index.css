@@ -249,11 +249,13 @@ body{
 
 
 .navtable table tr td{
-	background: #8694B1!important;
-	color:#fff;
+    background: #8694B1!important;
+}
+.navtable table tr td a{
+    color:#fff;
 }
 
-.navtable table tr td.active {
+.navtable table tr td.active a {
     color:#666;
 }
 
