@@ -726,7 +726,7 @@ function theme_tchart_report($variables)
 					background: #E8E8E8;
 					font-weight: bold;
 					color: #686868;
-					font-size: 14px;
+					font-size: 12px;
 				}
 			</style>';
 

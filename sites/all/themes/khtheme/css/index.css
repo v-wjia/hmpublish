@@ -248,12 +248,12 @@ body{
 }
 
 
-.data-table navtable table tr{
+.data-table .navtable table tr{
 	background-color: #8694B1;
 	color:#fff;
 }
 
-.data-table navtable table tr td.active {
+.data-table .navtable table tr td.active {
     color:#666;
 }
 
