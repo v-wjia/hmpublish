@@ -340,6 +340,10 @@ function tchart_block_info()
         'cache' => DRUPAL_CACHE_PER_ROLE
         //default
     );
+    $blocks['top_navigation_new'] = array(
+        'info' => t('New top navigation'),
+        'cache' => DRUPAL_CACHE_PER_ROLE 
+    );    
     return $blocks;
 }
 
@@ -460,7 +464,13 @@ function tchart_block_view($delta = '')
 
             return $block;
             break;
-        
+        case 'top_navigation_new':
+            $block = array();
+            $menu_tree = menu_tree(variable_get('menu_main_links_source', 'menu-top-nav'));
+            $block['content'] = "<div class='nav'>".drupal_render($menu_tree)."</div>";
+            
+            return $block;
+            break;
     }
 
 }
