@@ -110,12 +110,14 @@ function tchart_get_block_content($tid, $depth)
         $terms = taxonomy_get_tree($vid, $item->tid, 1);
         foreach ($terms as $term) {
             //unset term except #4
-            if (($term->name != "4#区域") && (strpos($term->name, "区域") > 0)) {
+            if (($term->name != "4#区域") && (strpos($term->name, "#区域") > 0)) {
                 continue;
             }
-            if (($term->name == "4#区域") && (strpos($term->name, "区域") > 0)) {
+            if (($term->name == "4#区域") && (strpos($term->name, "#区域") > 0)) {
                 $active[] = $term->tid;
-            }            
+            } elseif ($term->name == "试点区域") {
+                $active[] = $term->tid;
+            }           
             //unset term except #4 end.
             if ((variable_get('tchart_show_depth_' . $term->tid, FALSE) || variable_get('tchart_show_children_' . $term->tid, FALSE)) && in_array($term->tid, $active)) {
                 $data_array = _get_children($term, $active);

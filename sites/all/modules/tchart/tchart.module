@@ -362,7 +362,7 @@ function tchart_block_view($delta = '')
             if (user_access('access content')) {
                 $depth = 3;
                 global $tchart_cache_content;
-//                print_r($tchart_cache_content);
+                print_r($tchart_cache_content);
 //                watchdog('test', '='.$tchart_cache_content['items'].'=');
                 //unset term except #4
 //                if(!empty($tchart_cache_content['items'][3]) && is_array($tchart_cache_content['items'][3])) {
@@ -460,6 +460,7 @@ function tchart_block_view($delta = '')
 
             return $block;
             break;
+        
     }
 
 }
@@ -995,7 +996,7 @@ function theme_tchart_time_chart2($variables)
 
 
         $series_out .= '{
-            name: \'' . $category[$key][0] . '\',
+            name: \'' . (isset($category[$key][0]) ? $category[$key][0] : '' ) . '\',
             type: \'' . (isset($category[$key][2]) ? $category[$key][2] : 'bar') . '\',
             data: [' . $data_out . '],' .
             (isset($option->series_option[$key]) ? $option->series_option[$key] : "")
