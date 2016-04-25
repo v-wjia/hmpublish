@@ -516,3 +516,10 @@ body{
     height: 30px;
     line-height: 100%;
 }
+.main .right .nav ul > li a.active {
+    border-bottom: 2px solid #1fbea4;
+    color:#1fbea4;
+    display: inline-block;
+    width: 100%;
+    height:46px;
+}
