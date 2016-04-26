@@ -236,7 +236,7 @@
             <div class="sk-logo"><span>硬件设备</span></div>
             <p><span>传感器数量</span>&nbsp;&nbsp;<span>11个</span></p>
             <p><span>站点数量</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>7个</span></p>
-            <p><span>覆盖面积</span>&nbsp;&nbsp;&nbsp;&nbsp;<span><em>5</em>个</span></p>
+            <p><span>覆盖面积</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>143平方公里</span></p>
         </div>
     </div>
 
