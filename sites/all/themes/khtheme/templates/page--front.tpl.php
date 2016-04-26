@@ -167,7 +167,7 @@
 
 
 
-  <div class="sk-wrapper">
+<!--  <div class="sk-wrapper">
     <div class="sk sk1">
       <div class="sk-logo"><span>规划区域</span></div>
       <p><span>区域面积</span>&nbsp;&nbsp;<span>160平方公里</span></p>
@@ -218,20 +218,85 @@
       </ul>
       <img src="<?php echo $site_path; ?>img/chart.png" alt="" style="display:block;margin:30px auto 43px;">
     </div>
-  </div>
-
-<!--  <div class="title-list">
-    <ul>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-      <li><a href="">西咸新区海绵城市建设</a></li>
-    </ul>
   </div>-->
+
+    <div class="sk-wrapper">
+        <div class="new_sk new_sk1">
+            <div class="sk-logo"><span>规划区域</span></div>
+            <p><span>区域面积</span>&nbsp;&nbsp;<span>160平方公里</span></p>
+            <p><span>区域数量</span>&nbsp;&nbsp;<span><em>6</em>个</span></p>
+        </div>
+        <div class="new_sk new_sk2">
+            <div class="sk-logo"><span>监测指标</span></div>
+            <p><span>定量指标</span>&nbsp;&nbsp;<span>11个</span></p>
+            <p><span>定性指标</span>&nbsp;&nbsp;<span>7个</span></p>
+            <p><span>在线监控</span>&nbsp;&nbsp;<span><em>5</em>个</span></p>
+        </div>
+        <div class="new_sk new_sk3">
+            <div class="sk-logo"><span>硬件设备</span></div>
+            <p><span>传感器数量</span>&nbsp;&nbsp;<span>11个</span></p>
+            <p><span>站点数量</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>7个</span></p>
+            <p><span>覆盖面积</span>&nbsp;&nbsp;&nbsp;&nbsp;<span><em>5</em>个</span></p>
+        </div>
+    </div>
+
+
+    <div class="zb-wrapper">
+        <div class="zb-col-con">
+            <div class="zb-col up">
+                <h5>水生态<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+                <ul>
+                    <li>年径流总量控制率<span class="val">87.3%</span></li>
+                    <li>生态岸线恢复<span class="val">10km</span></li>
+                    <li>地下水位<span class="val">5.48m</span></li>
+                    <li>城市热岛效应<span class="val">20</span></li>
+                </ul>
+            </div>
+            <div class="zb-col down">
+                <h5>水环境<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+                <ul>
+                    <li>水环境质量<span class="val">IV类</span></li>
+                    <li>城市面源污染控制<span class="val">IV类</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="zb-col-con">
+            <div class="zb-col up" style="margin-right:0">
+                <h5>水资源<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+                <ul>
+                    <li>污水再生利用率<span class="val">22%</span></li>
+                    <li>雨水资源利用率<span class="val">8.50%</span></li>
+                    <li>管网漏损控制<span class="val">11%</span></li>
+                </ul>
+            </div>
+            <div class="zb-col down">
+                <h5>水安全<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+                <ul>
+                    <li>城市暴雨内涝灾害防治<span class="val"></span></li>
+                    <li>饮用水安全<span class="val">Ⅲ类</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="zb-col-con" style="margin-right:0">
+            <div class="zb-col up">
+                <h5>制度建设及执行情况<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+                <ul>
+                    <li>规划建设管控制度<span class="val">已规划</span></li>
+                    <li>蓝线、绿线划定与保护<span class="val">已规划</span></li>
+                    <li>技术规范与标准建设<span class="val">已规划</span></li>
+                    <li>投融资机制建设<span class="val">已规划</span></li>
+                    <li>绩效考核与奖励机制<span class="val">已规划</span></li>
+                    <li>产业化<span class="val">已规划</span></li>
+                </ul>
+            </div>
+            <div class="zb-col down">
+                <h5>显示度<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
+                <ul>
+                    <li>连片示范效应<span class="val">62%</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
   <!-- /.section, /#content -->
 
     <?php if ($page['sidebar_second']): ?>
