@@ -246,7 +246,7 @@
             <div class="zb-col up">
                 <h5>水生态<img src="<?php echo $site_path; ?>img/ddd.jpg" alt=""></h5>
                 <ul>
-                    <li>年径流总量控制率<span class="val">87.3%</span></li>
+                    <li><a href="http://hmcc.chinacloudsites.cn/pbitest.html" target="_blank" style="color:#666">年径流总量控制率</a><span class="val">87.3%</span></li>
                     <li>生态岸线恢复<span class="val">10km</span></li>
                     <li>地下水位<span class="val">5.48m</span></li>
                     <li>城市热岛效应<span class="val">20</span></li>
